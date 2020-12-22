@@ -1,6 +1,8 @@
 #include <time.h>
+#include <stdio.h>
 
 char logFileName;
+FILE *logFile;
 
 void writeLogMessage(char *id, char *msg) {
     // Calculamos la hora actual
