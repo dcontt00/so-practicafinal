@@ -5,10 +5,9 @@
 char logFileName;
 FILE *logFile;
 
-//Semáforos y variables condición
-//o Fichero, colaPacientes
-//o Condiciones para el estadístico y los pacientes en el estudio (variable
-//paciente en estudio)
+
+pthread_mutex_t mutexFichero, mutexColaPacientes;
+pthread_cond_t varEstadistico,varPacientes;
 int pacientes=0;
 struct paciente
 {
