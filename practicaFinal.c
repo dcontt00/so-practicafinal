@@ -2,10 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char logFileName;
-FILE *logFile;
-
-
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int pacientes=0;
@@ -32,9 +28,10 @@ struct enfermero
 };
 struct enfermero listaEnfermeros[3];
 
-//• Médico
-//• Estadístico
+pthread_t medico, estadistico;
 
+char logFileName;
+FILE *logFile;
 
 
 void writeLogMessage(char *id, char *msg) {
