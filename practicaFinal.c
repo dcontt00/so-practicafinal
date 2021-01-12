@@ -50,19 +50,28 @@ int main(int argc, char argv[]){
 
 //4. signal o sigaction SIGINT, terminar
 //5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
-//  a. Semáforos.
+    //a. Semáforos.
     if (pthread_mutex_init(&mutexFichero, NULL)!=0){
         exit(-1);
     }
     if (pthread_mutex_init(&mutexColaPacientes, NULL)!=0){
         exit(-1);
     }  
-//  b. Contador de pacientes.
+    //b. Contador de pacientes.
     pacientes=0;
-//  c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
-//  d. Lista de enfermer@s (si se incluye).
-//  e. Fichero de Log
-//  f. Variables condición
+
+    //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
+    for (size_t i = 0; i < 15; i++)
+    {
+        listaPacientes[i].atendido=0;
+        listaPacientes[i].id=0;
+        listaPacientes[i].serologia=0;
+        listaPacientes[i].tipo=0;
+    }
+
+    //d. Lista de enfermer@s (si se incluye).
+    //e. Fichero de Log
+    //f. Variables condición
     if (pthread_cond_init(&varEstadistico, NULL)!=0){
         exit(-1); 
     } 
@@ -70,6 +79,10 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
+    pthread_create (&medico, NULL, hiloMedico, NULL);
+    pthread_create (&medico, NULL, hiloMedico, NULL);
+    pthread_create (&medico, NULL, hiloMedico, NULL);
+
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
