@@ -11,9 +11,9 @@ pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int pacientes;
 const int MAXPACIENTES=15;
-struct paciente
+struct Paciente
 {
-    int id;
+    int id;// Identificacion del paciente
     int atendido; // 0 si no ha sido atendido 1 en caso contrario
     
     /**
@@ -24,15 +24,20 @@ struct paciente
     int tipo;
     int serologia; // 0 si no participa 1 en caso contrario
 };
-struct paciente listaPacientes[MAXPACIENTES];
+struct Paciente listaPacientes[MAXPACIENTES];
 
-struct enfermero
+struct Enfermero
 {
     int id;
-    char grupoVacunacion[20]; // el enfermero trata Junior, Medios o Senior
+    /**
+     * Junior(0-16 años): 0
+     * Medios(16-60 años): 1
+     * Senior(60+ años): 2
+     */ 
+    int grupoVacunacion; // el enfermero trata Junior, Medios o Senior
     int pacientesAtendidos;
 };
-struct enfermero enfermero1,enfermero2,enfermero3;
+struct Enfermero enfermero1,enfermero2,enfermero3;
 
 pthread_t medico, estadistico;
 
@@ -80,9 +85,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&medico, NULL, hiloMedico, NULL);
-    pthread_create (&medico, NULL, hiloMedico, NULL);
-    pthread_create (&medico, NULL, hiloMedico, NULL);
+    pthread_create (&enfermero1, NULL, hiloMedico, NULL);
+    pthread_create (&enfermero2, NULL, hiloMedico, NULL);
+    pthread_create (&enfermero3, NULL, hiloMedico, NULL);
 
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
