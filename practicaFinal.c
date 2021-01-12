@@ -37,6 +37,25 @@ pthread_t medico, estadistico;
 
 char logFileName;
 FILE *logFile;
+/**
+ * main {
+1. signal o sigaction SIGUSR1, paciente junior.
+2. signal o sigaction SIGUSR2, paciente medio.
+3. signal o sigaction SIGPIPE, paciente senior.
+4. signal o sigaction SIGINT, terminar
+5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
+a. Semáforos.
+b. Contador de pacientes.
+c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
+d. Lista de enfermer@s (si se incluye).
+e. Fichero de Log
+f. Variables condición
+6. Crear 3 hilos enfermer@s.
+7. Crear el hilo médico.
+8. Crear el hilo estadístico.
+9. Esperar por señales de forma infinita.
+}
+*//
 
 
 void writeLogMessage(char *id, char *msg) {
