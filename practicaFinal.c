@@ -40,8 +40,14 @@ FILE *logFile;
 int main(int argc, char argv[]){
 
 //1. signal o sigaction SIGUSR1, paciente junior.
+	signal(SIGUSR1, /**nuevoPaciente**/);
+
 //2. signal o sigaction SIGUSR2, paciente medio.
+	signal(SIGUSR2, /**nuevoPaciente**/);
+
 //3. signal o sigaction SIGPIPE, paciente senior.
+	signal(SIGPIPE, /**nuevoPaciente**/);
+
 //4. signal o sigaction SIGINT, terminar
 //5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
 //  a. Semáforos.
@@ -65,7 +71,9 @@ int main(int argc, char argv[]){
     } 
 //6. Crear 3 hilos enfermer@s.
 //7. Crear el hilo médico.
+    pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
+    pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
 //9. Esperar por señales de forma infinita.
 }
 
