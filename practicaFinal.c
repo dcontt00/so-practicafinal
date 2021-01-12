@@ -69,6 +69,19 @@ int main(int argc, char argv[]){
 //9. Esperar por señales de forma infinita.
 }
 
+/*
+ * Hilo que representa al médico
+ */
+void *hiloMedico(void *arg){
+	pthread_exit(NULL);
+}
+
+/*
+ * Hilo que representa al Estadístico
+ */
+void *hiloEstadistico(void *arg){
+	pthread_exit(NULL);
+}
 
 void writeLogMessage(char *id, char *msg) {
     // Calculamos la hora actual
