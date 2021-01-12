@@ -10,6 +10,7 @@
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int pacientes;
+const int MAXPACIENTES=15;
 struct paciente
 {
     int id;
@@ -23,7 +24,7 @@ struct paciente
     char tipo [20];
     int serologia; // 0 si no participa 1 en caso contrario
 };
-struct paciente listaPacientes[15];
+struct paciente listaPacientes[MAXPACIENTES];
 
 struct enfermero
 {
@@ -61,7 +62,7 @@ int main(int argc, char argv[]){
     pacientes=0;
 
     //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
-    for (size_t i = 0; i < 15; i++)
+    for (size_t i = 0; i < MAXPACIENTES; i++)
     {
         listaPacientes[i].atendido=0;
         listaPacientes[i].id=0;
