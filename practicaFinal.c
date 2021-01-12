@@ -17,11 +17,11 @@ struct paciente
     int atendido; // 0 si no ha sido atendido 1 en caso contrario
     
     /**
-     * Junior(0-16 años) SIGUSR1
-     * Medios(16-60 años) SIGUSR2
-     * Senior(60+ años) SIGPIPE
+     * Junior(0-16 años): 0
+     * Medios(16-60 años): 1
+     * Senior(60+ años): 2
      */ 
-    char tipo [20];
+    int tipo;
     int serologia; // 0 si no participa 1 en caso contrario
 };
 struct paciente listaPacientes[MAXPACIENTES];
@@ -32,7 +32,7 @@ struct enfermero
     char grupoVacunacion[20]; // el enfermero trata Junior, Medios o Senior
     int pacientesAtendidos;
 };
-struct enfermero listaEnfermeros[3];
+struct enfermero enfermero1,enfermero2,enfermero3;
 
 pthread_t medico, estadistico;
 
