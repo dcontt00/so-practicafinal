@@ -35,6 +35,7 @@ struct Enfermero
      * Senior(60+ años): 2
      */ 
     int grupoVacunacion; // el enfermero trata Junior, Medios o Senior
+    int atendiendo //0 si esta libre, 1 si esta atendiendo a un paciente
     int pacientesAtendidos;
 };
 struct Enfermero enfermero1,enfermero2,enfermero3;
@@ -114,6 +115,72 @@ void *hiloMedico(void *arg){
 		}
 		pthread_mutex_unlock(mutexColaPacientes);
 	}
+}
+
+/*
+ * Hilo que representa al Enfermrer@
+ */
+void *hiloEnfermero(void *arg) {
+    while(1) {
+        switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna realizara buscara en un sitio u otro
+            case 0: 
+                printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero1.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero1.atendiendo = 1;
+                        enfermero1.pacientesAtendidos++;
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                //No hay pacientes de tipo1, buscamos de otros tipos
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero1.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                        enfermero1.atendiendo = 1;
+                        enfermero1.pacientesAtendidos++;
+
+                        listaPacientes.pacientesAtendidos = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                    enfermero1.atendiendo = 0;//
+                    enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                    sleep(5); //Descansa sus 5 segundos 
+                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                }
+            case 1:
+                printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                //No hay pacientes de tipo1, buscamos de otros tipos
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        listaPacientes.pacientesAtendidos = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                    enfermero2.atendiendo = 0;//
+                    enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                    sleep(5); //Descansa sus 5 segundos 
+                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                }
+        }
+    }
 }
 
 /*
