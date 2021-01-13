@@ -100,14 +100,27 @@ int main(int argc, char argv[]){
  * Hilo que representa al médico
  */
 void *hiloMedico(void *arg){
-	pthread_exit(NULL);
+	while(true){
+		pthread_mutex_lock(mutexColaPacientes);
+		//Variable que guarda la posición del paciente que se busca
+		int posPaciente = -1;
+		/*
+		 * Buscamos el paciente con reaccion que mas tiempo lleve esperando
+		 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
+		 * posicion del paciente.
+		 */
+		for(int i = 0; i < MAXPACIENTES && posPaciente == 0; i++){
+
+		}
+		pthread_mutex_unlock(mutexColaPacientes);
+	}
 }
 
 /*
  * Hilo que representa al Estadístico
  */
 void *hiloEstadistico(void *arg){
-	pthread_exit(NULL);
+	
 }
 
 void writeLogMessage(char *id, char *msg) {
