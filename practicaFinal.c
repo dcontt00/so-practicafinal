@@ -437,7 +437,7 @@ void *hiloEstadistico(void *arg){
 }
 
 int calculaRandom(int n1, int n2){
-    return (rand() % (n2+1)) + n1;
+    return (rand() % (n2-n1+1)) + n1;
 }
 
 /*
