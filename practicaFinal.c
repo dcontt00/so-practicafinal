@@ -44,6 +44,14 @@ pthread_t medico, estadistico;
 
 char logFileName;
 FILE *logFile;
+
+
+/*
+ *Declaracion de funciones a utilizar
+ */
+int calculaRandom(int n1, int n2);
+void writeLogMessage(char *id, char *msg);
+
 int main(int argc, char argv[]){
 
 //1. signal o sigaction SIGUSR1, paciente junior.
@@ -97,41 +105,119 @@ int main(int argc, char argv[]){
 //9. Esperar por señales de forma infinita.
 }
 
+
 /*
  * Hilo que representa al médico
  */
 void *hiloMedico(void *arg){
 	//Se ejecuta indefinidamente hasta que se recibe el la señal
-	while(true){
+	while(1){
 		//Variable que guarda la posición del paciente que se busca
 		int posPaciente = -1;
 
 		while(posPaciente == -1){
-			//Como accedemos a la lista bloqueamos el mutex
-			pthread_mutex_lock(mutexColaPacientes);
-			/*
-			 * Buscamos el paciente con reaccion que mas tiempo lleve esperando
-			 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
-			 * posicion del paciente.
-			 */
-			for(int i = 0; i < pacientes && posPaciente != -1; i++){
-				if(listaPacientes[i].atendido == 4){
-					posPaciente = i;
+			if(pacientes > 0){
+				//Como accedemos a la lista bloqueamos el mutex
+				pthread_mutex_lock(&mutexColaPacientes);
+				/*
+				 * Buscamos el paciente con reaccion que mas tiempo lleve esperando
+				 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
+				 * posicion del paciente.
+				 */
+				for(int i = 0; i < pacientes && posPaciente != -1; i++){
+					if(listaPacientes[i].atendido == 4){
+						posPaciente = i;
+					}
+				}
+
+				//Si no encuentra un paciente con reaccion
+				if(posPacientes == -1){
+					/*
+					 * Vector que guarda el numero de pacientes en cola 
+					 * de cada tipo de paciente.
+					 */
+					int nPacientesTipo[3];
+					for(int i = 0; i < 3; i++){
+						nPacientesTipo[i] = 0; 
+					}
+
+					/*
+					 * Vector que guarda la posicion del paciente mas antiguo
+					 * de cada tipo
+					 */
+					int pacientesAntiguos[3];
+
+					/*
+					 * Buscamos el paciente mas antiguo en la cola con mas
+					 * pacientes de cada tipo
+					 */
+					for(int i = pacientes; i >= 0; i--){
+						if(listaPacientes[i].atendido == 0){
+							nPacientesTipo[listaDePacientes[i].grupoVacunacion] += 1;
+							pacientesAntiguos[listaDePacientes[i].grupoVacunacion] = i;
+						}
+					}
+
+					if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
+						posPaciente = pacientesAntiguos[0];
+					}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
+						posPaciente = pacientesAntiguos[1]
+					}else{
+						posPaciente = pacientesAntiguos[2];
+					}
+
+					//Se le cambia el flag de atendido al paciente si es un paciente para vacunar
+					listaPacientes[posPaciente].atendido = 1;
+				}else{
+					//Se le cambia el flag de atendido al paciente si es un paciente con reaccion
+					listaPacientes[posPaciente].atendido = 5;
+				}
+				
+				//Se le cambia el flag de atendido al paciente
+				pthread_mutex_unlock(&mutexColaPacientes);
+				//Se espera 1 segundo para repetir el bucle si posPaciente es -1
+				if(posPaciente == -1){
+					sleep(1);
 				}
 			}
-
-			if(posPacientes == -1){
-				
-			}
-			pthread_mutex_unlock(mutexColaPacientes);
-			//Se espera 1 segundo para repetir el bucle
-			sleep(1);
+		
 		}
 
+		//Medico sale del bucle de buscar pacientes
+		
+		//Escribe en el fichero que comienza la atencion
+		pthread_mutex_lock(&mutexFichero);
+		void writeLogMessage("Medico", "Comienza la atencion al paciente nº" + posPaciente);
+		pthread_mutex_unlock(&mutexFichero);
 
+		/*
+		 * Se Calcula el tipo de atencion y se duerme lo indicado
+		 */
+		int atencionPaciente = calcularAtencion();
+		if(atencionPaciente == 0){
+			sleep(calculaRandom(1, 4);
+		}else if(atencionPaciente == 1){
+			sleep(calculaRandom(2, 6);
+		}else{
+			sleep(calculaRandom(6, 10);
+		}
 
+		//Escribe en el fichero que termina la atencion
+		pthread_mutex_lock(&mutexFichero);
+                void writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
+                pthread_mutex_unlock(&mutexFichero);
+
+		//Accedemos a la cola para cambiar el flag de atendido
+		pthread_mutex_lock(&mutexColaPacientes);
+		if(atencionPaciente == 0 || atencionPaciente == 1){
+			listaPacientes[posPaciente].atendido = 4;
+		}else{
+			listaPacientes[posPaciente].atendido = -1;
+		}
+		pthread_mutex_lock(&mutexColaPacientes);
 	}
 }
+
 
 /*
  * Hilo que representa al Enfermrer@
@@ -351,8 +437,27 @@ void *hiloEstadistico(void *arg){
 }
 
 int calculaRandom(int n1, int n2){
-    return rand() % (n2-n1+1) + n1;
+    return (rand() % (n2+1)) + n1;
 }
+
+/*
+ *Metodo que calcula el tipo de atencion
+ *Devuelve 0 si esta todo en orden
+ *         1 si no se ha identificado correctamente
+ *         2 si tiene catarro o gripe
+ *Para el paciente
+ */
+int calcularAtencion(){
+	int numeroAleatorio = calculaRandom(1, 100);
+	if(numeroAleatorio < 80){
+		return 0;
+	}else if(numeroAleatorio < 90){
+		return 1;
+	}else{
+		return 2;
+	}
+}
+
 
 void writeLogMessage(char *id, char *msg) {
     // Calculamos la hora actual
