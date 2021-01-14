@@ -100,19 +100,35 @@ int main(int argc, char argv[]){
  * Hilo que representa al médico
  */
 void *hiloMedico(void *arg){
+	//Se ejecuta indefinidamente hasta que se recibe el la señal
 	while(true){
-		pthread_mutex_lock(mutexColaPacientes);
 		//Variable que guarda la posición del paciente que se busca
 		int posPaciente = -1;
-		/*
-		 * Buscamos el paciente con reaccion que mas tiempo lleve esperando
-		 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
-		 * posicion del paciente.
-		 */
-		for(int i = 0; i < MAXPACIENTES && posPaciente == 0; i++){
 
+		while(posPaciente == -1){
+			//Como accedemos a la lista bloqueamos el mutex
+			pthread_mutex_lock(mutexColaPacientes);
+			/*
+			 * Buscamos el paciente con reaccion que mas tiempo lleve esperando
+			 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
+			 * posicion del paciente.
+			 */
+			for(int i = 0; i < pacientes && posPaciente != -1; i++){
+				if(listaPacientes[i].atendido == 4){
+					posPaciente = i;
+				}
+			}
+
+			if(posPacientes == -1){
+				
+			}
+			pthread_mutex_unlock(mutexColaPacientes);
+			//Se espera 1 segundo para repetir el bucle
+			sleep(1);
 		}
-		pthread_mutex_unlock(mutexColaPacientes);
+
+
+
 	}
 }
 
