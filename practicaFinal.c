@@ -35,6 +35,7 @@ struct Enfermero
      * Senior(60+ años): 2
      */ 
     int grupoVacunacion; // el enfermero trata Junior, Medios o Senior
+    int atendiendo //0 si esta libre, 1 si esta atendiendo a un paciente
     int pacientesAtendidos;
 };
 struct Enfermero enfermero1,enfermero2,enfermero3;
@@ -133,10 +134,224 @@ void *hiloMedico(void *arg){
 }
 
 /*
+ * Hilo que representa al Enfermrer@
+ */
+void *hiloEnfermero(void *arg) {
+    while(1) {
+        switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna realizara buscara en un sitio u otro
+            case 0: 
+                printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+                int duerme;
+
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero1.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero1.atendiendo = 1;
+                        enfermero1.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                //No hay pacientes de tipo1, buscamos de otros tipos
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero1.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                        enfermero1.atendiendo = 1;
+                        enfermero1.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                    enfermero1.atendiendo = 0;//
+                    enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                    sleep(5); //Descansa sus 5 segundos 
+                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                }
+
+                break;
+            case 1:
+                printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                //No hay pacientes de tipo1, buscamos de otros tipos
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                    enfermero2.atendiendo = 0;//
+                    enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                    sleep(5); //Descansa sus 5 segundos 
+                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                }
+
+                break;
+
+            default:
+                printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                //No hay pacientes de tipo1, buscamos de otros tipos
+                for(int i = 0; i < MAXPACIENTES; i++) {
+                    if(enfermero2.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sleep(duerme);
+                            printf("Todo en regla\n");
+                            //Comprueba reaccion y estudio
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sleep(duerme);
+                            printf("Mal identificado\n");
+                            //Comprueba reaccion y estudio
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sleep(duerme);
+                            //Aqui sale del consultorio
+                        }
+
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                    }
+                }
+
+                if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                    enfermero2.atendiendo = 0;//
+                    enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                    sleep(5); //Descansa sus 5 segundos 
+                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                }
+
+                break;
+        }
+    }
+}
+
+/*
  * Hilo que representa al Estadístico
  */
 void *hiloEstadistico(void *arg){
 	
+}
+
+int calculaRandom(int n1, int n2){
+    return rand() % (n2-n1+1) + n1;
 }
 
 void writeLogMessage(char *id, char *msg) {
