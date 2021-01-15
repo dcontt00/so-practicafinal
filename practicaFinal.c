@@ -55,13 +55,13 @@ void writeLogMessage(char *id, char *msg);
 int main(int argc, char argv[]){
 
 //1. signal o sigaction SIGUSR1, paciente junior.
-	signal(SIGUSR1, /**nuevoPaciente**/);
+	signal(SIGUSR1, nuevoPaciente);
 
 //2. signal o sigaction SIGUSR2, paciente medio.
-	signal(SIGUSR2, /**nuevoPaciente**/);
+	signal(SIGUSR2, nuevoPaciente);
 
 //3. signal o sigaction SIGPIPE, paciente senior.
-	signal(SIGPIPE, /**nuevoPaciente**/);
+	signal(SIGPIPE, nuevoPaciente);
 
 //4. signal o sigaction SIGINT, terminar
 //5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
@@ -107,6 +107,23 @@ int main(int argc, char argv[]){
     pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
 //9. Esperar por señales de forma infinita.
 }
+
+void nuevoPaciente(int tipo){
+    /**
+    1. Comprobar si hay espacio en la lista de pacientes.
+        a. Si lo hay
+            i. Se añade el paciente.
+            ii. Contador de pacientes se incrementa.
+            iii. nuevaPaciente.id = ContadorPacientes.
+            iv. nuevoPaciente.atendido=0
+            v. tipo=Depende de la señal recibida.
+            vi. nuevoPaciente.Serología=0.
+            vii. Creamos hilo para el paciente.
+        b. Si no hay espacio
+            i. Se ignora la llamada.
+    */
+}
+
 
 
 void *hiloPaciente (void *arg) {
