@@ -9,7 +9,7 @@
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
-int pacientes;
+int contadorPacientes; 
 const int MAXPACIENTES=15;
 struct Paciente
 {
@@ -35,7 +35,7 @@ struct Enfermero
      * Senior(60+ años): 2
      */ 
     int grupoVacunacion; // el enfermero trata Junior, Medios o Senior
-    int atendiendo //0 si esta libre, 1 si esta atendiendo a un paciente
+    int atendiendo; //0 si esta libre, 1 si esta atendiendo a un paciente
     int pacientesAtendidos;
 };
 struct Enfermero enfermero1,enfermero2,enfermero3;
@@ -73,7 +73,7 @@ int main(int argc, char argv[]){
         exit(-1);
     }  
     //b. Contador de pacientes.
-    pacientes=0;
+    contadorPacientes=0;
 
     //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
     for (size_t i = 0; i < MAXPACIENTES; i++)
@@ -88,7 +88,7 @@ int main(int argc, char argv[]){
     //e. Fichero de Log
 
     logFile = fopen ("registroTiempos.log", "w");
-    
+
     //f. Variables condición
     if (pthread_cond_init(&varEstadistico, NULL)!=0){
         exit(-1); 
@@ -175,7 +175,7 @@ void *hiloMedico(void *arg){
 		int posPaciente = -1;
 
 		while(posPaciente == -1){
-			if(pacientes > 0){
+			if(contadorPacientes > 0){
 				//Como accedemos a la lista bloqueamos el mutex
 				pthread_mutex_lock(&mutexColaPacientes);
 				/*
@@ -183,14 +183,14 @@ void *hiloMedico(void *arg){
 				 * Si no hay posPaciente seguira siendo -1 y si hay pasa a ser la 
 				 * posicion del paciente.
 				 */
-				for(int i = 0; i < pacientes && posPaciente != -1; i++){
+				for(int i = 0; i < contadorPacientes && posPaciente != -1; i++){
 					if(listaPacientes[i].atendido == 4){
 						posPaciente = i;
 					}
 				}
 
 				//Si no encuentra un paciente con reaccion
-				if(posPacientes == -1){
+				if(posPaciente == -1){
 					/*
 					 * Vector que guarda el numero de pacientes en cola 
 					 * de cada tipo de paciente.
@@ -210,17 +210,17 @@ void *hiloMedico(void *arg){
 					 * Buscamos el paciente mas antiguo en la cola con mas
 					 * pacientes de cada tipo
 					 */
-					for(int i = pacientes; i >= 0; i--){
+					for(int i = contadorPacientes; i >= 0; i--){
 						if(listaPacientes[i].atendido == 0){
-							nPacientesTipo[listaDePacientes[i].grupoVacunacion] += 1;
-							pacientesAntiguos[listaDePacientes[i].grupoVacunacion] = i;
+							nPacientesTipo[listaPacientes[i].tipo] += 1;
+							pacientesAntiguos[listaPacientes[i].tipo] = i;
 						}
 					}
 
 					if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
 						posPaciente = pacientesAntiguos[0];
 					}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
-						posPaciente = pacientesAntiguos[1]
+						posPaciente = pacientesAntiguos[1];
 					}else{
 						posPaciente = pacientesAntiguos[2];
 					}
@@ -246,7 +246,7 @@ void *hiloMedico(void *arg){
 		
 		//Escribe en el fichero que comienza la atencion
 		pthread_mutex_lock(&mutexFichero);
-		void writeLogMessage("Medico", "Comienza la atencion al paciente nº" + posPaciente);
+		writeLogMessage("Medico", "Comienza la atencion al paciente nº" + posPaciente);
 		pthread_mutex_unlock(&mutexFichero);
 
 		/*
@@ -254,16 +254,16 @@ void *hiloMedico(void *arg){
 		 */
 		int atencionPaciente = calcularAtencion();
 		if(atencionPaciente == 0){
-			sleep(calculaRandom(1, 4);
+			sleep(calculaRandom(1, 4));
 		}else if(atencionPaciente == 1){
-			sleep(calculaRandom(2, 6);
+			sleep(calculaRandom(2, 6));
 		}else{
-			sleep(calculaRandom(6, 10);
+			sleep(calculaRandom(6, 10));
 		}
 
 		//Escribe en el fichero que termina la atencion
 		pthread_mutex_lock(&mutexFichero);
-                void writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
+                writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
                 pthread_mutex_unlock(&mutexFichero);
 
 		//Accedemos a la cola para cambiar el flag de atendido
@@ -289,7 +289,7 @@ void *hiloEnfermero(void *arg) {
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
                 int duerme;
 
-                for(int i = 0; i < pacientes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero1.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
@@ -297,7 +297,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -324,7 +324,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
@@ -333,7 +333,7 @@ void *hiloEnfermero(void *arg) {
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < pacientes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero1.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
@@ -341,7 +341,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -368,7 +368,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
@@ -387,7 +387,7 @@ void *hiloEnfermero(void *arg) {
 
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
 
-                for(int i = 0; i < pacientes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero2.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
@@ -395,7 +395,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -422,7 +422,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
@@ -432,7 +432,7 @@ void *hiloEnfermero(void *arg) {
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < pacintes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero2.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
@@ -440,7 +440,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -467,7 +467,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
@@ -484,7 +484,7 @@ void *hiloEnfermero(void *arg) {
             default:
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
 
-                for(int i = 0; i < pacientes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero3.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -492,7 +492,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -519,7 +519,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
@@ -528,7 +528,7 @@ void *hiloEnfermero(void *arg) {
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < pacientes; i++) {
+                for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero3.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -536,7 +536,7 @@ void *hiloEnfermero(void *arg) {
                         int aleatorio = calculaRandom(0, 100);
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(aleatorio < 80) {
@@ -563,7 +563,7 @@ void *hiloEnfermero(void *arg) {
                         }
 
                         pthread_mutex_lock(&mutexFichero);
-                        void writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
                         pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
