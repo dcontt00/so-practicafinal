@@ -1,10 +1,10 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
 
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
@@ -64,6 +64,7 @@ int main(int argc, char argv[]){
 	signal(SIGPIPE, nuevoPaciente);
 
 //4. signal o sigaction SIGINT, terminar
+    signal(SIGINT, SIG_DFL); // La señal por defecto de SIGINT es suspender la ejecución
 //5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
     //a. Semáforos.
     if (pthread_mutex_init(&mutexFichero, NULL)!=0){
@@ -106,6 +107,11 @@ int main(int argc, char argv[]){
 //8. Crear el hilo estadístico.
     pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
 //9. Esperar por señales de forma infinita.
+    while (1)
+    {
+        pause();
+    }
+    
 }
 
 void nuevoPaciente(int tipo){
