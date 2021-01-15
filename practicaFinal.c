@@ -86,6 +86,9 @@ int main(int argc, char argv[]){
 
     //d. Lista de enfermer@s (si se incluye).
     //e. Fichero de Log
+
+    logFile = fopen ("registroTiempos.log", "w");
+    
     //f. Variables condición
     if (pthread_cond_init(&varEstadistico, NULL)!=0){
         exit(-1); 
