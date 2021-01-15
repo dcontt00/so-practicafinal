@@ -106,6 +106,62 @@ int main(int argc, char argv[]){
 }
 
 
+void *hiloPaciente (void *arg) {
+    int comportamiento;
+    char type[20];
+    char mensaje[50];
+    switch(Paciente.tipo){
+    	case 0:
+    	sprintf(type, "%s","Junior");
+    	break;
+    	case 1:
+    	sprintf(type, "%s","Medio");
+    	break;
+    	case 2:
+    	sprintf(type, "%s","Senior");
+    	break;
+    	default:
+    	sprintf(type, "%s","Desconocido");
+    	break;
+    }
+    sprintf(mensaje,"Entra Paciente de tipo: %s", type);
+    pthread_mutex_lock(&mutexFichero);
+    writeLogMessage(type, mensaje);
+    pthread_mutex_unlock(&mutexFichero);
+    sleep(3);
+    if(Paciente.atendido==1){
+        printf("El paciente: %s esta siendo atentido\n", Paciente.id);
+    }else{
+        printf("El paciente: %s no esta siendo atentido\n",Paciente.id);
+        while(paciente.atendido==0){
+        	comportamiento=calculaRandom(1,10);
+        	if(comportamiento<=3){
+        		sprintf(mensaje,"El paciente: %s abandona la consulta\n", paciente.id);
+        		pthread_mutex_lock(&mutexFichero);
+    			writeLogMessage(comportamiento, mensaje);
+    			pthread_mutex_unlock(&mutexFichero);
+        		paciente=NULL;
+        		contadorPacientes --;
+        		pthread_exit;
+        	}else{
+        		comportamiento=calculaRandom(1,100);
+        		if(comportamiento<=5){
+        			sprintf(mensaje, "El paciente: %s se va al baño y pierde su turno.\n", paciente.id);
+        			pthread_mutex_lock(&mutexFichero);
+    				writeLogMessage(comportamiento, mensaje);
+    				pthread_mutex_unlock(&mutexFichero);
+        			paciente=NULL;
+        			contadorPacientes --;
+        			pthread_exit;
+        		}else{
+        			sprintf(mensaje, "El paciente: %s decide esperar a su turno", paciente.id);
+        			sleep(3);
+        		}
+        	}
+        }
+    }
+}
+
 /*
  * Hilo que representa al médico
  */
