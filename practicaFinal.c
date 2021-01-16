@@ -11,7 +11,7 @@ pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int contadorPacientes; 
 const int MAXPACIENTES=15;
-struct paciente
+struct Paciente
 {
     int id;// Identificacion del paciente
 
@@ -124,19 +124,53 @@ int main(int argc, char argv[]){
 }
 
 void nuevoPaciente(int tipo){
-    /**
-    1. Comprobar si hay espacio en la lista de pacientes.
-        a. Si lo hay
-            i. Se añade el paciente.
-            ii. Contador de pacientes se incrementa.
-            iii. nuevaPaciente.id = ContadorPacientes.
-            iv. nuevoPaciente.atendido=0
-            v. tipo=Depende de la señal recibida.
-            vi. nuevoPaciente.Serología=0.
-            vii. Creamos hilo para el paciente.
-        b. Si no hay espacio
-            i. Se ignora la llamada.
-    */
+   //1. Comprobar si hay espacio en la lista de pacientes.
+    if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
+        //i. Se añade el paciente.
+        struct Paciente nuevoPaciente;
+        listaPacientes[contadorPacientes]=nuevoPaciente;
+
+        //ii. Contador de pacientes se incrementa.
+        contadorPacientes++;
+
+        //iii. nuevaPaciente.id = ContadorPacientes.
+        nuevoPaciente.id=contadorPacientes;
+
+        //iv. nuevoPaciente.atendido=0
+        nuevoPaciente.atendido=0;
+
+        //v. tipo=Depende de la señal recibida.
+        if (signal(SIGUSR1, nuevoPaciente)){
+            nuevoPaciente.tipo=0;
+        }
+
+        if (signal(SIGUSR2,nuevoPaciente))
+        {
+            nuevoPaciente.tipo=1;
+        }
+
+        if (signal(SIGPIPE,nuevoPaciente))
+        {
+            nuevoPaciente.tipo=2;
+        }
+        
+        //vi. nuevoPaciente.Serología=0.
+        nuevoPaciente.serologia=0;
+
+        //vii. Creamos hilo para el paciente.
+        pthread_create (&nuevoPaciente, NULL, hiloPaciente, NULL);
+
+    }else{
+        // Si no hay espacio en la cola ignorar la señal
+        if (signal(SIGUSR1, nuevoPaciente)){
+            nuevoPaciente.tipo=0;
+        }else if(signal(SIGUSR2,nuevoPaciente)){
+            nuevoPaciente.tipo=1;
+        }else{
+            nuevoPaciente.tipo=2;
+        }
+    }
+    
 }
 
 
