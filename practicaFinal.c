@@ -433,36 +433,35 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
                             printf("Mal identificado\n");
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            printf("Tiene gripe, sale del consultorio\n");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº " + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº " + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero1.atendiendo = 0;//
                             enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_1 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
@@ -477,36 +476,35 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
                             printf("Mal identificado\n");
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            printf("Tiene gripe, sale del consultorio\n");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº " + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente mº " + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero1.atendiendo = 0;//
                             enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_1 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
@@ -531,36 +529,35 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
                             printf("Mal identificado\n");
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            printf("Tiene gripe, sale del consultorio\n");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº " + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº " + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero2.atendiendo = 0;//
                             enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_2 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
@@ -576,36 +573,36 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
+
                             printf("Mal identificado\n");
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            printf("Tiene gripe, sale del consultorio");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero2.atendiendo = 0;//
                             enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_2 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
@@ -628,36 +625,35 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
                             printf("Mal identificado\n");
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            print("Tiene gripe, sale del consultorio\n");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero3.atendiendo = 0;//
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
@@ -672,10 +668,6 @@ void *hiloEnfermero(void *arg) {
 
                         int aleatorio = calculaRandom(0, 100);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
-
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             sleep(duerme);
@@ -688,20 +680,25 @@ void *hiloEnfermero(void *arg) {
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sleep(duerme);
+                            printf("Tiene gripe, sale del consultorio\n");
                             //Aqui sale del consultorio
                         }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        sleep(duerme);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero3.atendiendo = 0;//
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
-
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        pthread_mutex_unlock(&mutexFichero);
 
                         listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
