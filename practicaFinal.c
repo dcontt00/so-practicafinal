@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <signal.h>
 
+// Compilar con -lpthread
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
@@ -50,8 +51,9 @@ struct Enfermero
 struct Enfermero enfermero1,enfermero2,enfermero3;
 
 pthread_t medico, estadistico;
+pthread_t threadEnfermero1, threadEnfermero2, threadEnfermero3;
 
-char logFileName;
+char logFileName[]="registroTiempos.log";
 FILE *logFile;
 
 
@@ -60,6 +62,12 @@ FILE *logFile;
  */
 int calculaRandom(int n1, int n2);
 void writeLogMessage(char *id, char *msg);
+void nuevoPaciente(int tipo);
+int calcularAtencion();
+void *hiloPaciente (void *arg);
+void *hiloMedico(void *arg);
+void *hiloEnfermero(void *arg);
+void *hiloEstadistico(void *arg);
 
 int main(int argc, char argv[]){
 
@@ -97,7 +105,7 @@ int main(int argc, char argv[]){
     //d. Lista de enfermer@s (si se incluye).
     //e. Fichero de Log
 
-    logFile = fopen ("registroTiempos.log", "w");
+    logFile = fopen (logFileName, "w");
 
     //f. Variables condición
     if (pthread_cond_init(&varEstadistico, NULL)!=0){
@@ -107,9 +115,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&enfermero1, NULL, hiloMedico, NULL);
-    pthread_create (&enfermero2, NULL, hiloMedico, NULL);
-    pthread_create (&enfermero3, NULL, hiloMedico, NULL);
+    pthread_create (&threadEnfermero1, NULL, hiloMedico, NULL);
+    pthread_create (&threadEnfermero2, NULL, hiloMedico, NULL);
+    pthread_create (&threadEnfermero3, NULL, hiloMedico, NULL);
 
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
@@ -158,17 +166,15 @@ void nuevoPaciente(int tipo){
         nuevoPaciente.serologia=0;
 
         //vii. Creamos hilo para el paciente.
-        pthread_create (&nuevoPaciente, NULL, hiloPaciente, NULL);
+        pthread_t threadNuevoPaciente;
+        pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
 
     }else{
         // Si no hay espacio en la cola ignorar la señal
-        if (signal(SIGUSR1, nuevoPaciente)){
-            nuevoPaciente.tipo=0;
-        }else if(signal(SIGUSR2,nuevoPaciente)){
-            nuevoPaciente.tipo=1;
-        }else{
-            nuevoPaciente.tipo=2;
-        }
+        signal(SIGUSR1,SIG_IGN);
+        signal(SIGUSR2,SIG_IGN);
+        signal(SIGPIPE,SIG_IGN);
+
     }
     
 }
@@ -239,24 +245,24 @@ void *hiloPaciente (void *arg) {
         	if(paciente.atendido==4){
         		sprintf(mensaje,"El paciente: %s ha dado reaccion a la vacuna", paciente.id);
         		while(paciente.atendido==5||paciente.atendido==4){
-        			spritnf(mensaje, "el paciente: %s esta siendo atendido por el medico", paciente.id);
+        			sprintf(mensaje, "el paciente: %s esta siendo atendido por el medico", paciente.id);
         			sleep(2);
         		}
         		
         	}else{
-        		spritf(mensaje, "El paciente: %s no ha dado reaccion", paciente.id);
+        		sprintf(mensaje, "El paciente: %s no ha dado reaccion", paciente.id);
         		comportamiento = calculaRandom(1,100);
         		if(comportamiento<=25){
         			sprintf(mensaje,"El paciente: %s decide participar en la prueba serologica", paciente.id);
         			paciente.serologia==1;
         		}else{
-        			sprintf(mensaje, "El paciente: %s no va a participar en la prueba serologica")
+        			sprintf(mensaje, "El paciente: %s no va a participar en la prueba serologica", paciente.id);
         		}
      	  }
 
         }
 	}
-	sprintf(mensaje, "EL paciente:%s abandona el consultorio");
+	sprintf(mensaje, "EL paciente:%s abandona el consultorio", paciente.id);
 	pthread_mutex_lock(&mutexFichero);
     writeLogMessage(paciente.id, mensaje);
     pthread_mutex_unlock(&mutexFichero);
