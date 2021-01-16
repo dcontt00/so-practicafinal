@@ -9,19 +9,23 @@
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
-int contadorPacientes; 
+int contadorPacientes;
 const int MAXPACIENTES=15;
 struct Paciente
 {
     int id;// Identificacion del paciente
 
     /*
-     * -1 - si ya se pueden marchar
+     * -1 - si ya se puede marchar
      *  0 - si no ha sido atendido
      *  1 - si esta siendo atendido para vacunar
-     *  2 - si ha sido vacunado
+     *  2 - si ha sido vacunado y tenia los papeles en orden
+     *  3 - si se ha vacunado pero no tenia los papeles en orden
      *  4 - si ha dado reaccion
      *  5 - si esta siendo atendido por el medico despues de dar reaccion
+     *  6 - si tiene gripe
+     *  7 - si puede entrar al estudio del estadistico
+     *  8 - si esta realizando la encuesta
      */
     int atendido;
     
@@ -266,6 +270,8 @@ void *hiloPaciente (void *arg) {
 
   }
 
+
+
 /*
  * Hilo que representa al médico
  */
@@ -346,6 +352,8 @@ void *hiloMedico(void *arg){
 					//Se le cambia el flag de atendido al paciente si tiene reaccion
 					listaPacientes[posPaciente].atendido = 5;
 				}
+
+				//Liberamos el mutex una vez terminamos las operaciones con la cola de pacientes
 				pthread_mutex_unlock(&mutexColaPacientes);
 				//Se espera 1 segundo para repetir el bucle si posPaciente es -1
 				if(posPaciente == -1){
@@ -361,7 +369,7 @@ void *hiloMedico(void *arg){
 		pthread_mutex_lock(&mutexFichero);
 		writeLogMessage("Medico", "Comienza la atencion al paciente nº" + posPaciente);
 		pthread_mutex_unlock(&mutexFichero);
-		if(reaccion){
+		if(reaccion == 0){
 			/*
 			 * Se Calcula el tipo de atencion y se duerme lo indicado
 			 */
@@ -374,22 +382,24 @@ void *hiloMedico(void *arg){
 				sleep(calculaRandom(6, 10));
 			}
 
-			//Escribe en el fichero que termina la atencion
-			pthread_mutex_lock(&mutexFichero);
-                	writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
-                	pthread_mutex_unlock(&mutexFichero);
-
-			//Accedemos a la cola para cambiar el flag de atendido
+			//Accedemos a la cola para cambiar el flag de atendido dependiendo del tipo de atencion
 			pthread_mutex_lock(&mutexColaPacientes);
-			if(atencionPaciente == 0 || atencionPaciente == 1){
+			if(atencionPaciente == 0){
+				listaPacientes[posPaciente].atendido = 2;
+			}else if(atencionPaciente == 1){
 				listaPacientes[posPaciente].atendido = 3;
 			}else{
-				listaPacientes[posPaciente].atendido = -1;
+				listaPacientes[posPaciente].atendido = 6;
 			}
-			pthread_mutex_lock(&mutexColaPacientes);
+
+			//Liberamos el mutex de la cola
+			pthread_mutex_unlock(&mutexColaPacientes);
 		}else{
+			//Si el paciente es uno que reacciono
 			sleep(5);
-			pthread_mutex_lock
+			pthread_mutex_lock(&mutexColaPacientes);
+			listaPacientes[posPaciente].atendido = 7;
+			pthread_mutex_unlock(&mutexColaPacientes)
 		}
 		//Escribe en el fichero que termina la atencion
                 pthread_mutex_lock(&mutexFichero);
@@ -706,18 +716,17 @@ void *hiloEnfermero(void *arg) {
  */
 void *hiloEstadistico(void *arg){
 	while(1){
-		pthread_mutex_lock(/*mutex*/);
-		pthread_cond_wait(&varEstadistico, /*mutex*/);
+		pthread_mutex_lock(&mutexColaPacientes);
+		pthread_cond_wait(&varEstadistico, &mutexColaPacientes);
+		pthread_mutex_unlock(&mutexColaPacientes);
 		pthread_mutex_lock(&mutexFichero);
 		writeLogMessage("Estadistico", "Comienza la actividad");
 		pthread_mutex_unlock(&mutexFichero);
 		sleep(4);
 		pthread_mutex_lock(&mutexFichero);
-                writeLogMessage("Estadistico", "Comienza la actividad");               
+                writeLogMessage("Estadistico", "Termina la actividad");               
                 pthread_mutex_unlock(&mutexFichero);
 		pthread_cond_signal(&varPacientes);
-		pthread_mutex_unlock(/*mutex*/);
-
 	}
 }
 
