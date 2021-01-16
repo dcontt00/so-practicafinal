@@ -11,7 +11,7 @@ pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int contadorPacientes; 
 const int MAXPACIENTES=15;
-struct Paciente
+struct paciente
 {
     int id;// Identificacion del paciente
 
@@ -26,9 +26,9 @@ struct Paciente
     int atendido;
     
     /**
-     * Junior(0-16 años): 0 (SIGUSR1)
-     * Medios(16-60 años): 1 (SIGUSR2)
-     * Senior(60+ años): 2 (SIGPIPE)
+     * Junior(0-16 años): 0
+     * Medios(16-60 años): 1
+     * Senior(60+ años): 2
      */ 
     int tipo;
     int serologia; // 0 si no participa 1 en caso contrario
@@ -123,62 +123,20 @@ int main(int argc, char argv[]){
     
 }
 
-/**
- * Método que añade un nuevo paciente a la cola si hay espacio
- */ 
 void nuevoPaciente(int tipo){
-    //1. Comprobar si hay espacio en la lista de pacientes.
-    if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
-        //i. Se añade el paciente.
-        struct Paciente nuevoPaciente;
-        listaPacientes[contadorPacientes]=nuevoPaciente;
-
-        //ii. Contador de pacientes se incrementa.
-        contadorPacientes++;
-
-        //iii. nuevaPaciente.id = ContadorPacientes.
-        nuevoPaciente.id=contadorPacientes;
-
-        //iv. nuevoPaciente.atendido=0
-        nuevoPaciente.atendido=0;
-
-        //v. tipo=Depende de la señal recibida.
-        if (signal(SIGUSR1, nuevoPaciente)){
-            nuevoPaciente.tipo=0;
-        }
-
-        if (signal(SIGUSR2,nuevoPaciente))
-        {
-            nuevoPaciente.tipo=1;
-        }
-
-        if (signal(SIGPIPE,nuevoPaciente))
-        {
-            nuevoPaciente.tipo=2;
-        }
-        
-        //vi. nuevoPaciente.Serología=0.
-        nuevoPaciente.serologia=0;
-
-        //vii. Creamos hilo para el paciente.
-        pthread_create (&nuevoPaciente, NULL, hiloPaciente, NULL);
-
-    }else{
-        // Si no hay espacio en la cola ignorar la señal
-        if (signal(SIGUSR1, nuevoPaciente)){
-            nuevoPaciente.tipo=0;
-        }else if(signal(SIGUSR2,nuevoPaciente)){
-            nuevoPaciente.tipo=1;
-        }else{
-            nuevoPaciente.tipo=2;
-        }
-    }
-    
-    
-
-    //    b. Si no hay espacio
-    //        i. Se ignora la llamada.
-    
+    /**
+    1. Comprobar si hay espacio en la lista de pacientes.
+        a. Si lo hay
+            i. Se añade el paciente.
+            ii. Contador de pacientes se incrementa.
+            iii. nuevaPaciente.id = ContadorPacientes.
+            iv. nuevoPaciente.atendido=0
+            v. tipo=Depende de la señal recibida.
+            vi. nuevoPaciente.Serología=0.
+            vii. Creamos hilo para el paciente.
+        b. Si no hay espacio
+            i. Se ignora la llamada.
+    */
 }
 
 
@@ -234,10 +192,45 @@ void *hiloPaciente (void *arg) {
         			sprintf(mensaje, "El paciente: %s decide esperar a su turno", paciente.id);
         			sleep(3);
         		}
-        	}
+        	}   	
         }
-    }
-}
+        //compruebo si el paciente tiene gripe.
+        if(paciente.atendido==6){
+        	sprintf(mensaje,"El paciente: %s tiene gripe.", paciente.id);
+        	paciente=NULL;
+        	contadorPacientes --;
+        	pthread_exit;
+        }else{
+        	//compruebo si da reaccion a la vacuna.
+        	if(paciente.atendido==4){
+        		sprintf(mensaje,"El paciente: %s ha dado reaccion a la vacuna", paciente.id);
+        		while(paciente.atendido==5||paciente.atendido==4){
+        			spritnf(mensaje, "el paciente: %s esta siendo atendido por el medico", paciente.id);
+        			sleep(2);
+        		}
+        		
+        	}else{
+        		spritf(mensaje, "El paciente: %s no ha dado reaccion", paciente.id);
+        		comportamiento = calculaRandom(1,100);
+        		if(comportamiento<=25){
+        			sprintf(mensaje,"El paciente: %s decide participar en la prueba serologica", paciente.id);
+        			paciente.serologia==1;
+        		}else{
+        			sprintf(mensaje, "El paciente: %s no va a participar en la prueba serologica")
+        		}
+     	  }
+
+        }
+	}
+	sprintf(mensaje, "EL paciente:%s abandona el consultorio");
+	pthread_mutex_lock(&mutexFichero);
+    writeLogMessage(paciente.id, mensaje);
+    pthread_mutex_unlock(&mutexFichero);
+   	paciente==NULL;
+   	contadorPacientes --;
+ 	pthread_exit;
+
+  }
 
 /*
  * Hilo que representa al médico
