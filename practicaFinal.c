@@ -14,7 +14,16 @@ const int MAXPACIENTES=15;
 struct Paciente
 {
     int id;// Identificacion del paciente
-    int atendido; // 0 si no ha sido atendido 1 en caso contrario
+
+    /*
+     * -1 - si ya se pueden marchar
+     *  0 - si no ha sido atendido
+     *  1 - si esta siendo atendido para vacunar
+     *  2 - si ha sido vacunado
+     *  4 - si ha dado reaccion
+     *  5 - si esta siendo atendido por el medico despues de dar reaccion
+     */
+    int atendido;
     
     /**
      * Junior(0-16 años): 0
@@ -192,11 +201,17 @@ void *hiloPaciente (void *arg) {
  * Hilo que representa al médico
  */
 void *hiloMedico(void *arg){
+
+	//Variable que guarda la posición del paciente que se busca
+        int posPaciente;
+	/*0 - si no es un paciente con reaccion
+         *1 - si es un paciente con reaccion
+         */
+	int reaccion;
 	//Se ejecuta indefinidamente hasta que se recibe el la señal
 	while(1){
 		//Variable que guarda la posición del paciente que se busca
-		int posPaciente = -1;
-
+		posPaciente = -1;
 		while(posPaciente == -1){
 			if(contadorPacientes > 0){
 				//Como accedemos a la lista bloqueamos el mutex
@@ -209,6 +224,7 @@ void *hiloMedico(void *arg){
 				for(int i = 0; i < contadorPacientes && posPaciente != -1; i++){
 					if(listaPacientes[i].atendido == 4){
 						posPaciente = i;
+						reaccion = 1;
 					}
 				}
 
@@ -220,7 +236,7 @@ void *hiloMedico(void *arg){
 					 */
 					int nPacientesTipo[3];
 					for(int i = 0; i < 3; i++){
-						nPacientesTipo[i] = 0; 
+						nPacientesTipo[i] = 0;
 					}
 
 					/*
@@ -228,7 +244,9 @@ void *hiloMedico(void *arg){
 					 * de cada tipo
 					 */
 					int pacientesAntiguos[3];
-
+					for(int i = 0; i < 3; i++){
+						pacientesAntiguos[i] = -1;
+					}
 					/*
 					 * Buscamos el paciente mas antiguo en la cola con mas
 					 * pacientes de cada tipo
@@ -240,22 +258,25 @@ void *hiloMedico(void *arg){
 						}
 					}
 
-					if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
-						posPaciente = pacientesAntiguos[0];
-					}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
-						posPaciente = pacientesAntiguos[1];
-					}else{
-						posPaciente = pacientesAntiguos[2];
-					}
+					//Si se ha encontrado algun paciente antiguo
+					if(pacientesAntiguos[1] != -1 || pacientesAntiguos[2] != -1 || pacientesAntiguos[0] != -1){
+						if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
+							posPaciente = pacientesAntiguos[0];
+						}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
+							posPaciente = pacientesAntiguos[1];
+						}else{
+							posPaciente = pacientesAntiguos[2];
+						}
 
-					//Se le cambia el flag de atendido al paciente si es un paciente para vacunar
-					listaPacientes[posPaciente].atendido = 1;
+						reaccion = 0;
+						//Se le cambia el flag de atendido al paciente si es un paciente para vacunar
+                        	                listaPacientes[posPaciente].atendido = 1;
+			
+					}
 				}else{
-					//Se le cambia el flag de atendido al paciente si es un paciente con reaccion
+					//Se le cambia el flag de atendido al paciente si tiene reaccion
 					listaPacientes[posPaciente].atendido = 5;
 				}
-				
-				//Se le cambia el flag de atendido al paciente
 				pthread_mutex_unlock(&mutexColaPacientes);
 				//Se espera 1 segundo para repetir el bucle si posPaciente es -1
 				if(posPaciente == -1){
@@ -266,38 +287,46 @@ void *hiloMedico(void *arg){
 		}
 
 		//Medico sale del bucle de buscar pacientes
-		
+
 		//Escribe en el fichero que comienza la atencion
 		pthread_mutex_lock(&mutexFichero);
 		writeLogMessage("Medico", "Comienza la atencion al paciente nº" + posPaciente);
 		pthread_mutex_unlock(&mutexFichero);
+		if(reaccion){
+			/*
+			 * Se Calcula el tipo de atencion y se duerme lo indicado
+			 */
+			int atencionPaciente = calcularAtencion();
+			if(atencionPaciente == 0){
+				sleep(calculaRandom(1, 4));
+			}else if(atencionPaciente == 1){
+				sleep(calculaRandom(2, 6));
+			}else{
+				sleep(calculaRandom(6, 10));
+			}
 
-		/*
-		 * Se Calcula el tipo de atencion y se duerme lo indicado
-		 */
-		int atencionPaciente = calcularAtencion();
-		if(atencionPaciente == 0){
-			sleep(calculaRandom(1, 4));
-		}else if(atencionPaciente == 1){
-			sleep(calculaRandom(2, 6));
+			//Escribe en el fichero que termina la atencion
+			pthread_mutex_lock(&mutexFichero);
+                	writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
+                	pthread_mutex_unlock(&mutexFichero);
+
+			//Accedemos a la cola para cambiar el flag de atendido
+			pthread_mutex_lock(&mutexColaPacientes);
+			if(atencionPaciente == 0 || atencionPaciente == 1){
+				listaPacientes[posPaciente].atendido = 3;
+			}else{
+				listaPacientes[posPaciente].atendido = -1;
+			}
+			pthread_mutex_lock(&mutexColaPacientes);
 		}else{
-			sleep(calculaRandom(6, 10));
+			sleep(5);
+			pthread_mutex_lock
 		}
-
 		//Escribe en el fichero que termina la atencion
-		pthread_mutex_lock(&mutexFichero);
+                pthread_mutex_lock(&mutexFichero);
                 writeLogMessage("Medico", "Termina la atencion al paciente nº" + posPaciente);
                 pthread_mutex_unlock(&mutexFichero);
-
-		//Accedemos a la cola para cambiar el flag de atendido
-		pthread_mutex_lock(&mutexColaPacientes);
-		if(atencionPaciente == 0 || atencionPaciente == 1){
-			listaPacientes[posPaciente].atendido = 4;
-		}else{
-			listaPacientes[posPaciente].atendido = -1;
-		}
-		pthread_mutex_lock(&mutexColaPacientes);
-    }
+    }	
 }
 
 /*
@@ -607,7 +636,20 @@ void *hiloEnfermero(void *arg) {
  * Hilo que representa al Estadístico
  */
 void *hiloEstadistico(void *arg){
-	
+	while(1){
+		pthread_mutex_lock(/*mutex*/);
+		pthread_cond_wait(&varEstadistico, /*mutex*/);
+		pthread_mutex_lock(&mutexFichero);
+		writeLogMessage("Estadistico", "Comienza la actividad");
+		pthread_mutex_unlock(&mutexFichero);
+		sleep(4);
+		pthread_mutex_lock(&mutexFichero);
+                writeLogMessage("Estadistico", "Comienza la actividad");               
+                pthread_mutex_unlock(&mutexFichero);
+		pthread_cond_signal(&varPacientes);
+		pthread_mutex_unlock(/*mutex*/);
+
+	}
 }
 
 int calculaRandom(int n1, int n2){
