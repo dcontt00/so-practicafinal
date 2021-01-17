@@ -436,14 +436,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -479,14 +482,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -532,14 +538,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -576,17 +585,20 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            printf("Tiene gripe, sale del consultorio");
+                            printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
+
 
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
@@ -618,6 +630,8 @@ void *hiloEnfermero(void *arg) {
             default:
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
 
+                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+
                 for(int i = 0; i < contadorPacientes; i++) {
                     if(enfermero3.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero3.atendiendo = 1;
@@ -628,16 +642,20 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
-                            print("Tiene gripe, sale del consultorio\n");
+                            printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
+
 
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
@@ -670,24 +688,27 @@ void *hiloEnfermero(void *arg) {
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sleep(duerme);
                             printf("Todo en regla\n");
+                            listaPacientes[i].atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sleep(duerme);
                             printf("Mal identificado\n");
+                            listaPacientes[i].atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
+                            listaPacientes[i].atendido = 6;
                             //Aqui sale del consultorio
                         }
+
 
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         sleep(duerme);
                         writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        writeLogMessage("Enfermero", motivo);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
