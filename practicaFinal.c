@@ -139,10 +139,10 @@ int main(int argc, char argv[]){
 
 void nuevoPaciente(int tipo){
    //1. Comprobar si hay espacio en la lista de pacientes.
+    pthread_mutex_lock(&mutexColaPacientes);
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
         //i. Se añade el paciente.
         struct Paciente pacienteNuevo;
-        listaPacientes[contadorPacientes]=pacienteNuevo;
 
         //ii. Contador de pacientes se incrementa.
         contadorPacientes++;
@@ -174,6 +174,8 @@ void nuevoPaciente(int tipo){
         //vii. Creamos hilo para el paciente.
         pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
+        ultimoPaciente.sig=nuevoPaciente;
+        
 
     }else{
         // Si no hay espacio en la cola ignorar la señal
@@ -182,6 +184,8 @@ void nuevoPaciente(int tipo){
         signal(SIGPIPE,SIG_IGN);
 
     }
+    pthread_mutex_unlock(&mutexColaPacientes);
+
     
 }
 
