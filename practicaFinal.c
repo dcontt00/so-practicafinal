@@ -37,8 +37,10 @@ struct Paciente
      */ 
     int tipo;
     int serologia; // 0 si no participa 1 en caso contrario
+    struct Paciente *sig;
 };
-struct Paciente listaPacientes[MAXPACIENTES];
+struct Paciente *primerPaciente;
+struct Paciente *ultimoPaciente;
 
 struct Enfermero
 {
