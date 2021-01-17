@@ -469,16 +469,23 @@ void *hiloMedico(void *arg){
  * Hilo que representa al Enfermrer@
  */
 void *hiloEnfermero(void *arg) {
+    struct Paciente *paciente;
+
     while(1) {
-        switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna realizara buscara en un sitio u otro
+        paciente = NULL;
+        switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna buscara en un sitio u otro
             case 0: 
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                struct Paciente *sigPaciente = primerPaciente;
 
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
+               
                 int duerme;
+                int i = 0;
 
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero1.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {
+                    if(enfermero1.atendiendo == 0 && sigPaciente.tipo == 0 && sigPaciente.atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
 
@@ -487,17 +494,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -517,14 +524,17 @@ void *hiloEnfermero(void *arg) {
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        sigPaciente.atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
                     }
+                    sigPaciente = sigPaciente.sig;
+                    i++;
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero1.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {
+                    if(enfermero1.atendiendo == 0 && sigPaciente.atendido == 0) {  
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
 
@@ -533,17 +543,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -563,10 +573,11 @@ void *hiloEnfermero(void *arg) {
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        sigPaciente.atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
-
                     }
+                    sigPaciente = sigPaciente.sig;
+                    i++;
                 }
 
                 //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
@@ -577,10 +588,15 @@ void *hiloEnfermero(void *arg) {
             case 1:
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
 
-                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                int duerme;
+                int i = 0;
 
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero2.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                struct Paciente *sigPaciente = primerPaciente;
+
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {  
+                    if(enfermero2.atendiendo == 0 && sigPaciente.tipo == 0 && sigPaciente.atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
 
@@ -589,17 +605,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -619,15 +635,17 @@ void *hiloEnfermero(void *arg) {
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        sigPaciente.atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
-
                     }
+                    i++;
+                    sigPaciente = sigPaciente.sig;
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero2.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {
+                    if(enfermero2.atendiendo == 0 && sigPaciente.atendido == 0) {  
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
 
@@ -636,17 +654,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -667,9 +685,11 @@ void *hiloEnfermero(void *arg) {
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        sigPaciente.atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
                     }
+                    sigPaciente = sigPaciente.sig;
+                    i++;
                 }
 
                 //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
@@ -681,10 +701,15 @@ void *hiloEnfermero(void *arg) {
             default:
                 printf("Soy el enfermer@_%d", grupoVacunacion + 1); //Asignamos al enfermero su identificador secuencial
 
-                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                int duerme;
+                int i = 0;
 
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero3.atendiendo == 0 &&listaPacientes[i].tipo == 0 && listaPacientes[i].atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                struct Paciente *sigPaciente = primerPaciente;
+
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {
+                    if(enfermero3.atendiendo == 0 && sigPaciente.tipo == 0 && sigPaciente.atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
 
@@ -693,17 +718,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -724,14 +749,17 @@ void *hiloEnfermero(void *arg) {
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        sigpaciente.atendido = 1;//Marcamos el paciente como atendido
                         pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
                     }
+                    i++;
+                    sigPaciente = sigPaciente.sig;
                 }
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                for(int i = 0; i < contadorPacientes; i++) {
-                    if(enfermero3.atendiendo == 0 && listaPacientes[i].atendido == 0) {  
+                //for(int i = 0; i < contadorPacientes; i++) {
+                while(i < contadorPacientes && sigPaciente.sig != NULL) {
+                    if(enfermero3.atendiendo == 0 && sigPaciente.atendido == 0) {  
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
 
@@ -740,17 +768,17 @@ void *hiloEnfermero(void *arg) {
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
                             printf("Todo en regla\n");
-                            listaPacientes[i].atendido = 2;
+                            sigPaciente.atendido = 2;
                             //Comprueba reaccion y estudio
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
                             printf("Mal identificado\n");
-                            listaPacientes[i].atendido = 3;
+                            sigPaciente.atendido = 3;
                             //Comprueba reaccion y estudio
                         }else {
                             duerme = calculaRandom(6, 10);
                             printf("Tiene gripe, sale del consultorio\n");
-                            listaPacientes[i].atendido = 6;
+                            sigPaciente.atendido = 6;
                             //Aqui sale del consultorio
                         }
 
@@ -768,18 +796,20 @@ void *hiloEnfermero(void *arg) {
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
                             pthread_mutex_lock(&mutexFichero);
-                                    writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
-                                    pthread_mutex_unlock(&mutexFichero);
-                                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
-                                }
-
-                                listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
-                                pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
-                            }
+                            writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
+                            //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
-                        //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
-                        pthread_mutex_unlock(&mutexColaPacientes);
+                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
+                    }
+                    sigPaciente = sigPaciente.sig;
+                    i++;
+                }
+
+                //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
+                pthread_mutex_unlock(&mutexColaPacientes);
                 sleep(1);
 
                 break;
