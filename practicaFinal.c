@@ -186,10 +186,10 @@ void nuevoPaciente(int tipo){
 
 
 void *hiloPaciente (void *arg) {
-    Paciente paciente;
+    struct Paciente paciente;
     int comportamiento;
     char type[20];
-    char mensaje[50];
+    char mensaje[100];
     switch(paciente.tipo){
     	case 0:
     	sprintf(type, "%s","Junior");
@@ -209,80 +209,84 @@ void *hiloPaciente (void *arg) {
     writeLogMessage(type, mensaje);
     pthread_mutex_unlock(&mutexFichero);
     sleep(3);
-    if(Paciente.atendido==1){
-        printf("El paciente: %s esta siendo atentido\n", paciente.id);
+    if(paciente.atendido==1){
+        printf("El paciente: %d esta siendo atentido\n", paciente.id);
     }else{
-        printf("El paciente: %s no esta siendo atentido\n",paciente.id);
+        printf("El paciente: %d no esta siendo atentido\n",paciente.id);
         while(paciente.atendido==0){
         	comportamiento=calculaRandom(1,10);
         	if(comportamiento<=3){
-        		sprintf(mensaje,"El paciente: %s abandona la consulta\n", paciente.id);
+        		sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente.id);
         		pthread_mutex_lock(&mutexFichero);
     			writeLogMessage("Paciente"+paciente.id, mensaje);
     			pthread_mutex_unlock(&mutexFichero);
-        		paciente=NULL;
+                //TODO: Eliminar paciente de la cola
+        		//paciente=NULL;
         		contadorPacientes --;
         		pthread_exit;
         	}else{
         		comportamiento=calculaRandom(1,100);
         		if(comportamiento<=5){
-        			sprintf(mensaje, "El paciente: %s se va al baño y pierde su turno.\n", paciente.id);
+        			sprintf(mensaje, "El paciente: %d se va al baño y pierde su turno.\n", paciente.id);
         			pthread_mutex_lock(&mutexFichero);
     				writeLogMessage("Paciente"+paciente.id, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
-        			paciente=NULL;
+                    //TODO: Eliminar paciente de la cola
+        			//paciente=NULL;
         			contadorPacientes --;
         			pthread_exit;
         		}else{
-        			sprintf(mensaje, "El paciente: %s decide esperar a su turno", paciente.id);
+        			sprintf(mensaje, "El paciente: %d decide esperar a su turno", paciente.id);
         			sleep(3);
         		}
         	}   	
         }
         //compruebo si el paciente tiene gripe.
         if(paciente.atendido==6){
-        	sprintf(mensaje,"El paciente: %s tiene gripe.", paciente.id);
-        	paciente=NULL;
+        	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente.id);
+        	//paciente=NULL;
+            //TODO: Eliminar paciente de la cola
         	contadorPacientes --;
         	pthread_exit;
         }else{
         	//compruebo si da reaccion a la vacuna.
         	if(paciente.atendido==4){
-        		sprintf(mensaje,"El paciente: %s ha dado reaccion a la vacuna", paciente.id);
+        		sprintf(mensaje,"El paciente: %d ha dado reaccion a la vacuna", paciente.id);
         		while(paciente.atendido==5||paciente.atendido==4){
-        			sprintf(mensaje, "el paciente: %s esta siendo atendido por el medico", paciente.id);
+        			sprintf(mensaje, "el paciente: %d esta siendo atendido por el medico", paciente.id);
         			sleep(2);
         		}
         		
         	}else{
-        		sprintf(mensaje, "El paciente: %s no ha dado reaccion", paciente.id);
+        		sprintf(mensaje, "El paciente: %d no ha dado reaccion", paciente.id);
         		comportamiento = calculaRandom(1,100);
         		if(comportamiento<=25){
-        			sprintf(mensaje,"El paciente: %s decide participar en la prueba serologica", paciente.id);
+        			sprintf(mensaje,"El paciente: %d decide participar en la prueba serologica", paciente.id);
         			paciente.serologia==1;
         			pthread_cond_signal(&varEstadistico);
-        			sprintf(mensaje, "El paciente: %s esta preparado para el estudio.\n", paciente.id);
+        			sprintf(mensaje, "El paciente: %d esta preparado para el estudio.\n", paciente.id);
         			pthread_mutex_lock(&mutexFichero);
     				writeLogMessage("Paciente" + paciente.id, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
-        			pthread_cond_wait(&varPacientes);
-        			sprintf(mensaje, "El paciente: %s abandona el estudio\n", paciente.id);
+        			pthread_cond_wait(&varPacientes,&mutexFichero);
+        			sprintf(mensaje, "El paciente: %d abandona el estudio\n", paciente.id);
         			pthread_mutex_lock(&mutexFichero);
     				writeLogMessage("Paciente"+paciente.id, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
 
         		}else{
-        			sprintf(mensaje, "El paciente: %s no va a participar en la prueba serologica", paciente.id);
+        			sprintf(mensaje, "El paciente: %d no va a participar en la prueba serologica", paciente.id);
         		}
      	  }
 
         }
 	}
-	sprintf(mensaje, "EL paciente:%s abandona el consultorio", paciente.id);
+	sprintf(mensaje, "EL paciente:%d abandona el consultorio", paciente.id);
 	pthread_mutex_lock(&mutexFichero);
-    writeLogMessage(paciente.id, mensaje);
+    writeLogMessage("paciente"+paciente.id, mensaje);
     pthread_mutex_unlock(&mutexFichero);
-   	paciente==NULL;
+    //TODO: Eliminar paciente de la cola
+   	//paciente=NULL;
    	contadorPacientes --;
  	pthread_exit;
 
