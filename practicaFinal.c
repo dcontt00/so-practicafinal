@@ -814,6 +814,6 @@ void writeLogMessage(char *id, char *msg) {
     fclose(logFile);
 }
 
-void eliminarPaciente(*paciente){
-    *paciente=
+void eliminarPaciente(Struct Paciente paciente){
+    paciente.ant.sig=paciente.sig;
 }
