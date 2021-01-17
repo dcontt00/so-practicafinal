@@ -186,10 +186,11 @@ void nuevoPaciente(int tipo){
 
 
 void *hiloPaciente (void *arg) {
+    Paciente paciente;
     int comportamiento;
     char type[20];
     char mensaje[50];
-    switch(Paciente.tipo){
+    switch(paciente.tipo){
     	case 0:
     	sprintf(type, "%s","Junior");
     	break;
@@ -209,9 +210,9 @@ void *hiloPaciente (void *arg) {
     pthread_mutex_unlock(&mutexFichero);
     sleep(3);
     if(Paciente.atendido==1){
-        printf("El paciente: %s esta siendo atentido\n", Paciente.id);
+        printf("El paciente: %s esta siendo atentido\n", paciente.id);
     }else{
-        printf("El paciente: %s no esta siendo atentido\n",Paciente.id);
+        printf("El paciente: %s no esta siendo atentido\n",paciente.id);
         while(paciente.atendido==0){
         	comportamiento=calculaRandom(1,10);
         	if(comportamiento<=3){
