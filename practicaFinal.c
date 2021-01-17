@@ -259,6 +259,17 @@ void *hiloPaciente (void *arg) {
         		if(comportamiento<=25){
         			sprintf(mensaje,"El paciente: %s decide participar en la prueba serologica", paciente.id);
         			paciente.serologia==1;
+        			pthread_cond_signal(&varEstadistico);
+        			sprintf(mensaje, "El paciente: %s esta preparado para el estudio.\n", paciente.id);
+        			pthread_mutex_lock(&mutexFichero);
+    				writeLogMessage("Paciente" + paciente.id, mensaje);
+    				pthread_mutex_unlock(&mutexFichero);
+        			pthread_cond_wait(&varPacientes);
+        			sprintf(mensaje, "El paciente: %s abandona el estudio\n", paciente.id);
+        			pthread_mutex_lock(&mutexFichero);
+    				writeLogMessage("Paciente"+paciente.id, mensaje);
+    				pthread_mutex_unlock(&mutexFichero);
+
         		}else{
         			sprintf(mensaje, "El paciente: %s no va a participar en la prueba serologica", paciente.id);
         		}
