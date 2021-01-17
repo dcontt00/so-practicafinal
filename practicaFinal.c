@@ -37,7 +37,8 @@ struct Paciente
      */ 
     int tipo;
     int serologia; // 0 si no participa 1 en caso contrario
-    struct Paciente *sig;
+    struct Paciente *ant;//Paciente anterior
+    struct Paciente *sig;// Paciente siguiente
 };
 struct Paciente *primerPaciente;
 struct Paciente *ultimoPaciente;
@@ -174,7 +175,8 @@ void nuevoPaciente(int tipo){
         //vii. Creamos hilo para el paciente.
         pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
-        ultimoPaciente.sig=nuevoPaciente;
+        ultimoPaciente.sig=pacienteNuevo;
+        pacienteNuevo.ant=ultimoPaciente;
         
 
     }else{
@@ -810,4 +812,8 @@ void writeLogMessage(char *id, char *msg) {
     logFile = fopen(logFileName, "a");
     fprintf(logFile, "[%s] %s: %s\n", stnow, id, msg);
     fclose(logFile);
+}
+
+void eliminarPaciente(*paciente){
+    *paciente=
 }
