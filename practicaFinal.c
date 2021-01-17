@@ -11,7 +11,7 @@
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
 int contadorPacientes;
-const int MAXPACIENTES=15;
+#define MAXPACIENTES 15
 struct Paciente
 {
     int id;// Identificacion del paciente
@@ -139,35 +139,35 @@ void nuevoPaciente(int tipo){
    //1. Comprobar si hay espacio en la lista de pacientes.
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
         //i. Se añade el paciente.
-        struct Paciente nuevoPaciente;
-        listaPacientes[contadorPacientes]=nuevoPaciente;
+        struct Paciente pacienteNuevo;
+        listaPacientes[contadorPacientes]=pacienteNuevo;
 
         //ii. Contador de pacientes se incrementa.
         contadorPacientes++;
 
         //iii. nuevaPaciente.id = ContadorPacientes.
-        nuevoPaciente.id=contadorPacientes;
+        pacienteNuevo.id=contadorPacientes;
 
         //iv. nuevoPaciente.atendido=0
-        nuevoPaciente.atendido=0;
+        pacienteNuevo.atendido=0;
 
         //v. tipo=Depende de la señal recibida.
         if (signal(SIGUSR1, nuevoPaciente)){
-            nuevoPaciente.tipo=0;
+            pacienteNuevo.tipo=0;
         }
 
         if (signal(SIGUSR2,nuevoPaciente))
         {
-            nuevoPaciente.tipo=1;
+            pacienteNuevo.tipo=1;
         }
 
         if (signal(SIGPIPE,nuevoPaciente))
         {
-            nuevoPaciente.tipo=2;
+            pacienteNuevo.tipo=2;
         }
         
         //vi. nuevoPaciente.Serología=0.
-        nuevoPaciente.serologia=0;
+        pacienteNuevo.serologia=0;
 
         //vii. Creamos hilo para el paciente.
         pthread_t threadNuevoPaciente;
@@ -217,7 +217,7 @@ void *hiloPaciente (void *arg) {
         	if(comportamiento<=3){
         		sprintf(mensaje,"El paciente: %s abandona la consulta\n", paciente.id);
         		pthread_mutex_lock(&mutexFichero);
-    			writeLogMessage(comportamiento, mensaje);
+    			writeLogMessage("Paciente"+paciente.id, mensaje);
     			pthread_mutex_unlock(&mutexFichero);
         		paciente=NULL;
         		contadorPacientes --;
@@ -227,7 +227,7 @@ void *hiloPaciente (void *arg) {
         		if(comportamiento<=5){
         			sprintf(mensaje, "El paciente: %s se va al baño y pierde su turno.\n", paciente.id);
         			pthread_mutex_lock(&mutexFichero);
-    				writeLogMessage(comportamiento, mensaje);
+    				writeLogMessage("Paciente"+paciente.id, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
         			paciente=NULL;
         			contadorPacientes --;
@@ -405,7 +405,7 @@ void *hiloMedico(void *arg){
 			sleep(5);
 			pthread_mutex_lock(&mutexColaPacientes);
 			listaPacientes[posPaciente].atendido = 7;
-			pthread_mutex_unlock(&mutexColaPacientes)
+			pthread_mutex_unlock(&mutexColaPacientes);
 		}
 		//Escribe en el fichero que termina la atencion
                 pthread_mutex_lock(&mutexFichero);
@@ -708,6 +708,7 @@ void *hiloEnfermero(void *arg) {
                         writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
                         sleep(duerme);
                         writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
+                        //FIXME: Motivo?
                         writeLogMessage("Enfermero", motivo);
                         pthread_mutex_unlock(&mutexFichero);
 
@@ -716,18 +717,18 @@ void *hiloEnfermero(void *arg) {
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
                             pthread_mutex_lock(&mutexFichero);
-                            writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
-                            pthread_mutex_unlock(&mutexFichero);
-                            //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                                    writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
+                                    pthread_mutex_unlock(&mutexFichero);
+                                    //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
+                                }
+
+                                listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
+                                pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
+                            }
                         }
 
-                        listaPacientes[i].atendido = 1;//Marcamos el paciente como atendido
-                        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
-                    }
-                }
-
-                //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
-                pthread_mutex_unlock(&mutexColaPacientes);
+                        //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
+                        pthread_mutex_unlock(&mutexColaPacientes);
                 sleep(1);
 
                 break;
