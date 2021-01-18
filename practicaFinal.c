@@ -138,9 +138,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&threadEnfermero1, NULL, hiloMedico, (void *)&enfermero1);
-    pthread_create (&threadEnfermero2, NULL, hiloMedico, (void *)&enfermero2);
-    pthread_create (&threadEnfermero3, NULL, hiloMedico, (void *)&enfermero3);
+    pthread_create (&threadEnfermero1, NULL, hiloMedico, 1);
+    pthread_create (&threadEnfermero2, NULL, hiloMedico, 2);
+    pthread_create (&threadEnfermero3, NULL, hiloMedico, 3);
 
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
