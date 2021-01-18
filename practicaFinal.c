@@ -194,13 +194,12 @@ void nuevoPaciente(int tipo){
         pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
         if (primerPaciente==NULL){
-            primerPaciente=nuevoPaciente;
-            primerPaciente->sig=ultimoPaciente;
-            ultimoPaciente->ant=primerPaciente;
+            primerPaciente=pacienteNuevo;
+            ultimoPaciente = primerPaciente;
         }else{
-            nuevoPaciente->ant=ultimoPaciente;
-            ultimoPaciente=nuevoPaciente;
-
+            pacienteNuevo->ant = ultimoPaciente;
+            ultimoPaciente->sig = pacienteNuevo;
+            ultimoPaciente = nuevoPaciente;
         }
         
         
@@ -562,6 +561,7 @@ void *hiloMedico(void *arg){
  * Hilo que representa al Enfermrer@
  */
 void *hiloEnfermero(void *arg) {
+    //TODO Añadir a calcular reaccion
     char motivo[100]="hola";
     int duerme;
     int grupoVacunacion =  0;//FIXME: No se pasa bien el parámetro
