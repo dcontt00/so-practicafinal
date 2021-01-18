@@ -154,13 +154,9 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 }
 
 void nuevoPaciente(int tipo){
-    signal(SIGUSR1, nuevoPaciente);
-
-//2. signal o sigaction SIGUSR2, paciente medio.
-	//signal(SIGUSR2, nuevoPaciente);
-
-//3. signal o sigaction SIGPIPE, paciente senior.
-	//signal(SIGPIPE, nuevoPaciente);
+=======
+    signal(tipo, nuevoPaciente);
+>>>>>>> f323993d040fac0ca6c0060c7a27d177621c01ae
    //1. Comprobar si hay espacio en la lista de pacientes.
     pthread_mutex_lock(&mutexColaPacientes);
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
@@ -209,12 +205,6 @@ void nuevoPaciente(int tipo){
         
         
         
-
-    }else{
-        // Si no hay espacio en la cola ignorar la señal
-        signal(SIGUSR1,SIG_IGN);
-        signal(SIGUSR2,SIG_IGN);
-        signal(SIGPIPE,SIG_IGN);
 
     }
     pthread_mutex_unlock(&mutexColaPacientes);
