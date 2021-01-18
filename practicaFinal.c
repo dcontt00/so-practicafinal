@@ -396,10 +396,10 @@ void *hiloMedico(void *arg){
 				 * Si no hay paciente seguira siendo NULL y si hay pasa a ser la 
 				 * posicion del paciente.
 				 */
-                pthread_mutex_lock(&mutexColaPacientes);
+
                 struct Paciente *sigPaciente;
                 sigPaciente = primerPaciente;
-                pthread_mutex_unlock(&mutexColaPacientes);
+
 
 				while(sigPaciente != NULL && sigPaciente->sig != NULL && paciente == NULL){
 					if(sigPaciente->atendido == 4){
@@ -433,14 +433,13 @@ void *hiloMedico(void *arg){
 					 * Buscamos el paciente mas antiguo en la cola con mas
 					 * pacientes de cada tipo
 					 */
-                    pthread_mutex_lock(&mutexColaPacientes);
+
                     contador = contadorPacientes;
-                    pthread_mutex_unlock(&mutexColaPacientes);
 					int i = contador - 1;
-                    pthread_mutex_lock(&mutexColaPacientes);
+
                     struct Paciente *sigPaciente;
                     sigPaciente = primerPaciente;
-                    pthread_mutex_unlock(&mutexColaPacientes);
+
 					while(sigPaciente != NULL && sigPaciente->sig != NULL){
 						if(sigPaciente->atendido == 0){
 							nPacientesTipo[sigPaciente->tipo] += 1;
@@ -454,20 +453,17 @@ void *hiloMedico(void *arg){
 					if(pacientesAntiguos[1] != -1 || pacientesAntiguos[2] != -1 || pacientesAntiguos[0] != -1){
 						if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
 							int i = pacientesAntiguos[0];
-                            pthread_mutex_lock(&mutexColaPacientes);
+
                             struct Paciente *sigPaciente;
                             sigPaciente = primerPaciente;
-                            pthread_mutex_unlock(&mutexColaPacientes);
 							while(i > 0){
 								sigPaciente = sigPaciente->sig;
 							}
 							paciente = sigPaciente;
 						}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
 							int i = pacientesAntiguos[1];
-                            pthread_mutex_lock(&mutexColaPacientes);
                             struct Paciente *sigPaciente;
                             sigPaciente = primerPaciente;
-                            pthread_mutex_unlock(&mutexColaPacientes);
                             while(i > 0){                  
                                 sigPaciente = sigPaciente->sig;
 								i--;
@@ -475,10 +471,8 @@ void *hiloMedico(void *arg){
                             paciente = sigPaciente;
 						}else{
 							int i = pacientesAntiguos[2];
-                            pthread_mutex_lock(&mutexColaPacientes);
                             struct Paciente *sigPaciente;
                             sigPaciente = primerPaciente;
-                            pthread_mutex_unlock(&mutexColaPacientes);
                             while(i > 0){                  
                                 sigPaciente = sigPaciente->sig;
                                 i--;
