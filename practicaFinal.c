@@ -251,26 +251,31 @@ void *hiloPaciente (void *arg) {
             atendido = paciente->atendido;
             pthread_mutex_unlock(&mutexColaPacientes);
             comportamiento=calculaRandom(1,10);
+            printf("random(1)%d\n",comportamiento);
             if(atendido == 1){
 
             }else{
                 if(comportamiento<=3){
                         sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Paciente"+paciente->id, mensaje);
+                        writeLogMessage("Paciente", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			eliminarPaciente(paciente);
-			free(paciente);
+                        printf("%d",3);
+			            eliminarPaciente(paciente);
+			            free(paciente);
+
                         contadorPacientes --;
                         pthread_exit;
                 }else{
                     comportamiento=calculaRandom(1,100);
+                      printf("random(2)%d\n",comportamiento);
+
                     if(comportamiento<=5){
                         sprintf(mensaje, "El paciente: %d se va al baño y pierde su turno.\n", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			eliminarPaciente(paciente);
+			            eliminarPaciente(paciente);
                         free(paciente);
                         contadorPacientes --;
                         pthread_exit;
@@ -916,6 +921,8 @@ void writeLogMessage(char *id, char *msg) {
 }
 
 void eliminarPaciente(struct Paciente *pacienteAEliminar){
+            printf("%d",3);
+
 	if(pacienteAEliminar->ant != NULL && pacienteAEliminar->sig != NULL){
 		pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
 		pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
