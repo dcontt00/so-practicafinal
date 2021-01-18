@@ -138,9 +138,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&threadEnfermero1, NULL, hiloMedico, 1);
-    pthread_create (&threadEnfermero2, NULL, hiloMedico, 2);
-    pthread_create (&threadEnfermero3, NULL, hiloMedico, 3);
+    pthread_create (&threadEnfermero1, NULL, hiloMedico, (void *)1);
+    pthread_create (&threadEnfermero2, NULL, hiloMedico, (void *)2);
+    pthread_create (&threadEnfermero3, NULL, hiloMedico, (void *)3);
 
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
@@ -259,7 +259,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			eliminarPaciente(&paciente);
+			eliminarPaciente(paciente);
 			free(paciente);
                         contadorPacientes --;
                         pthread_exit;
@@ -270,7 +270,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			eliminarPaciente(&paciente);
+			eliminarPaciente(paciente);
                         free(paciente);
                         contadorPacientes --;
                         pthread_exit;
@@ -284,7 +284,7 @@ void *hiloPaciente (void *arg) {
         //compruebo si el paciente tiene gripe.
         if(atendido==6){
         	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente->id);
-        	eliminarPaciente(&paciente);
+        	eliminarPaciente(paciente);
                 free(paciente);
         	contadorPacientes --;
         	pthread_exit;
@@ -333,7 +333,7 @@ void *hiloPaciente (void *arg) {
 	pthread_mutex_lock(&mutexFichero);
    	writeLogMessage("paciente"+paciente->id, mensaje);
    	pthread_mutex_unlock(&mutexFichero);
-    	eliminarPaciente(&paciente);
+    	eliminarPaciente(paciente);
         free(paciente);
    	contadorPacientes --;
  	pthread_exit(NULL);
@@ -357,7 +357,7 @@ void *hiloMedico(void *arg){
 	while(1){
 		paciente = NULL;
 		while(paciente == NULL){
-			if(contadorPacientes > 0){
+if(contadorPacientes > 0){
 				//Como accedemos a la lista bloqueamos el mutex
 				pthread_mutex_lock(&mutexColaPacientes);
 				/*
