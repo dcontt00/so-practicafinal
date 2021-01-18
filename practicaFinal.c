@@ -139,10 +139,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&threadEnfermero1, NULL, hiloMedico, (void *)1);
-    pthread_create (&threadEnfermero2, NULL, hiloMedico, (void *)2);
-    pthread_create (&threadEnfermero3, NULL, hiloMedico, (void *)3);
-
+    pthread_create (&threadEnfermero1, NULL, hiloEnfermero, (void *)0);
+    pthread_create (&threadEnfermero2, NULL, hiloEnfermero, (void *)1);
+    pthread_create (&threadEnfermero3, NULL, hiloEnfermero, (void *)2);
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
@@ -537,9 +536,9 @@ void *hiloMedico(void *arg){
  * Hilo que representa al Enfermrer@
  */
 void *hiloEnfermero(void *arg) {
-    char motivo[100];
+    char motivo[100]="hola";
     int duerme;
-    int grupoVacunacion = *(int *)arg;
+    int grupoVacunacion =  2;//FIXME: No se pasa bien el parámetro
 
     while(1) {
         printf("kjsdflñkjdsa");
