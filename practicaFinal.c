@@ -180,16 +180,16 @@ void nuevoPaciente(int tipo){
 
         //v. tipo=Depende de la señal recibida.
         //FIXME: siempre se asigna senior
-        if (tipo == SIGUSR1){
+        if (tipo == 10){
             pacienteNuevo->tipo=0;
         }
 
-        if (tipo == SIGUSR2)
+        if (tipo == 12)
         {
             pacienteNuevo->tipo=1;
         }
 
-        if (tipo == SIGPIPE)
+        if (tipo == 13)
         {
             pacienteNuevo->tipo=2;
         }
@@ -845,20 +845,22 @@ void *hiloEnfermero(void *arg) {
 
 
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente %d",sigPaciente->id);
+                        sprintf(mensaje, "Comienza la atencion al paciente %d", sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
 
                         sleep(duerme);
                         
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente %d",sigPaciente->id);
+                        sprintf(mensaje, "Termina la atencion al paciente %d", sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
                         writeLogMessage("Paciente", motivo);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero3.atendiendo = 0;//
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
-                            sleep(5); //Descansa sus 5 segundos 
+                            sleep(5); //Descansa sus 5 segundos
                             pthread_mutex_lock(&mutexFichero);
                             writeLogMessage("Enfermero", "Enfermer@_3 esta descansando");
                             pthread_mutex_unlock(&mutexFichero);
