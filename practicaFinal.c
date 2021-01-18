@@ -154,9 +154,8 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 }
 
 void nuevoPaciente(int tipo){
-=======
+
     signal(tipo, nuevoPaciente);
->>>>>>> f323993d040fac0ca6c0060c7a27d177621c01ae
    //1. Comprobar si hay espacio en la lista de pacientes.
     pthread_mutex_lock(&mutexColaPacientes);
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
@@ -262,7 +261,7 @@ void *hiloPaciente (void *arg) {
             comportamiento=calculaRandom(1,10);
             printf("random(1)%d\n",comportamiento);
             if(atendido == 1){
-
+                printf("El paciente: %d esta siendo atentido\n", paciente->id);
             }else{
                 if(comportamiento<=3){
                         sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
