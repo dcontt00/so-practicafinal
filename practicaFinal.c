@@ -162,9 +162,7 @@ void nuevoPaciente(int tipo){
         struct Paciente *pacienteNuevo;
         pacienteNuevo=(struct Paciente *)malloc(sizeof(struct Paciente));
         //ii. Contador de pacientes se incrementa.
-        pthread_mutex_lock(&mutexColaPacientes);
         contadorPacientes++;
-        pthread_mutex_unlock(&mutexColaPacientes);
 
         //iii. nuevaPaciente->id = ContadorPacientes.
         pacienteNuevo->id=contadorPacientes;
