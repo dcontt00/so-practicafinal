@@ -557,7 +557,7 @@ void *hiloMedico(void *arg){
  */
 void *hiloEnfermero(void *arg) {
     //TODO Añadir a calcular reaccion
-    char motivo[100]="hola";
+    char motivo[100];
     int duerme;
     int grupoVacunacion =  0;//FIXME: No se pasa bien el parámetro
     int i = 0;
@@ -580,15 +580,15 @@ void *hiloEnfermero(void *arg) {
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sprintf(motivo, "El paciente %d tiene todo en regla", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
                             sigPaciente->atendido = 2;
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sprintf(motivo, "El paciente %d esta mal documentado", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
                             sigPaciente->atendido = 3;
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que NO fue atendido:El paciente %d tiene gripe", sigPaciente->id);
                             sigPaciente->atendido = 6;
                         }
                     
