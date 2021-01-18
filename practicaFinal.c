@@ -270,7 +270,6 @@ void *hiloPaciente (void *arg) {
 
             }else{
                 if(comportamiento<=3){
-<<<<<<< HEAD
                         sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente", mensaje);
@@ -280,17 +279,6 @@ void *hiloPaciente (void *arg) {
 
                         contadorPacientes --;
                         pthread_exit((void *)0);
-=======
-                    sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
-                    pthread_mutex_lock(&mutexFichero);
-                    writeLogMessage("Paciente", mensaje);
-                    pthread_mutex_unlock(&mutexFichero);
-			        //eliminarPaciente(paciente);
-			        //free(paciente);
-
-                    contadorPacientes --;
-                    pthread_exit((void *)1);
->>>>>>> 6ebc0fdb0754c4050fa7824ee203a262b2a57b07
                 }else{
                     comportamiento=calculaRandom(1,100);
                     printf("random(2)%d\n",comportamiento);
@@ -301,12 +289,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-<<<<<<< HEAD
 			            //eliminarPaciente(*paciente);
-=======
-
-			            eliminarPaciente(paciente);
->>>>>>> 2f52bcd6ee005d09ab8414366ee20e8cf9061eac
                         free(paciente);
                         contadorPacientes --;
                         pthread_exit((void *)0);
