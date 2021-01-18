@@ -237,11 +237,13 @@ void *hiloPaciente (void *arg) {
     pthread_mutex_lock(&mutexFichero);
     writeLogMessage(type, mensaje);
     pthread_mutex_unlock(&mutexFichero);
+
     sleep(3);
     
     pthread_mutex_lock(&mutexColaPacientes);
     atendido = paciente->atendido;
     pthread_mutex_unlock(&mutexColaPacientes);
+    
     if(atendido==1){
         printf("El paciente: %d esta siendo atentido\n", paciente->id);
     }else{
@@ -275,6 +277,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
+
 			            eliminarPaciente(paciente);
                         free(paciente);
                         contadorPacientes --;
@@ -298,6 +301,7 @@ void *hiloPaciente (void *arg) {
 		    pthread_mutex_lock(&mutexColaPacientes);
     		atendido = paciente->atendido;
     		pthread_mutex_unlock(&mutexColaPacientes);
+
         	if(atendido==4){
         		sprintf(mensaje,"El paciente: %d ha dado reaccion a la vacuna", paciente->id);
         		while(paciente->atendido==5||paciente->atendido==4){
@@ -316,11 +320,13 @@ void *hiloPaciente (void *arg) {
 				    pthread_mutex_lock(&mutexColaPacientes);
         			paciente->serologia==1;
 				    pthread_mutex_unlock(&mutexColaPacientes);
+
         			pthread_cond_signal(&varEstadistico);
         			sprintf(mensaje, "El paciente: %d esta preparado para el estudio.\n", paciente->id);
         			pthread_mutex_lock(&mutexFichero);
     				writeLogMessage("Paciente" + paciente->id, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
+
         			pthread_cond_wait(&varPacientes,&mutexFichero);
         			sprintf(mensaje, "El paciente: %d abandona el estudio\n", paciente->id);
         			pthread_mutex_lock(&mutexFichero);
@@ -338,6 +344,7 @@ void *hiloPaciente (void *arg) {
 	pthread_mutex_lock(&mutexFichero);
    	writeLogMessage("paciente"+paciente->id, mensaje);
    	pthread_mutex_unlock(&mutexFichero);
+
     eliminarPaciente(paciente);
     free(paciente);
    	contadorPacientes --;
@@ -497,6 +504,7 @@ void *hiloMedico(void *arg){
 		}else{
 			//Si el paciente es uno que reacciono
 			sleep(5);
+
 			pthread_mutex_lock(&mutexColaPacientes);
 			paciente->atendido = 7;
 			pthread_mutex_unlock(&mutexColaPacientes);
@@ -561,7 +569,9 @@ void *hiloEnfermero(void *arg) {
                         if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero1.atendiendo = 0;//
                             enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+
                             sleep(5); //Descansa sus 5 segundos 
+
                             pthread_mutex_lock(&mutexFichero);
                             writeLogMessage("Enfermero", "Enfermer@_1 esta descansando");
                             pthread_mutex_unlock(&mutexFichero);
@@ -870,17 +880,21 @@ void *hiloEnfermero(void *arg) {
  * Hilo que representa al Estadístico
  */
 void *hiloEstadistico(void *arg){
-	while(1){
+	while(1) {
 		pthread_mutex_lock(&mutexColaPacientes);
 		pthread_cond_wait(&varEstadistico, &mutexColaPacientes);
 		pthread_mutex_unlock(&mutexColaPacientes);
+
 		pthread_mutex_lock(&mutexFichero);
 		writeLogMessage("Estadistico", "Comienza la actividad");
 		pthread_mutex_unlock(&mutexFichero);
+
 		sleep(4);
+
 		pthread_mutex_lock(&mutexFichero);
         writeLogMessage("Estadistico", "Termina la actividad");               
         pthread_mutex_unlock(&mutexFichero);
+
 		pthread_cond_signal(&varPacientes);
 	}
 }
