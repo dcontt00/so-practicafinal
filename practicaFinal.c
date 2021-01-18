@@ -871,6 +871,7 @@ void *hiloEnfermero(void *arg) {
                         enfermero3.pacientesAtendidos++;
 
                         int aleatorio = calculaRandom(0, 100);
+                        pthread_mutex_lock(&mutexFichero);
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
@@ -886,16 +887,17 @@ void *hiloEnfermero(void *arg) {
                             sigPaciente->atendido = 6;
                         }
 
+                        writeLogMessage("Paciente", motivo);
 
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº" + i);
+                        sprintf(mensaje, "Comienza la atencion al paciente nº %d", sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
 
                         sleep(duerme);
                         
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº" + i);
-                        writeLogMessage("Paciente", motivo);
+                        sprintf(mensaje, "Termina la atencion al paciente nº %d", sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
