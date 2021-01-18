@@ -172,16 +172,16 @@ void nuevoPaciente(int tipo){
 
         //v. tipo=Depende de la señal recibida.
         //FIXME: siempre se asigna senior
-        if (signal(SIGUSR1, nuevoPaciente)){
+        if (tipo == SIGUSR1){
             pacienteNuevo->tipo=0;
         }
 
-        if (signal(SIGUSR2,nuevoPaciente))
+        if (tipo == SIGUSR2)
         {
             pacienteNuevo->tipo=1;
         }
 
-        if (signal(SIGPIPE,nuevoPaciente))
+        if (tipo == SIGPIPE)
         {
             pacienteNuevo->tipo=1;
         }
