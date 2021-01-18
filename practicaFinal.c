@@ -183,10 +183,9 @@ void nuevoPaciente(int tipo){
 
         if (signal(SIGPIPE,nuevoPaciente))
         {
-            pacienteNuevo->tipo=2;
+            pacienteNuevo->tipo=0;
         }
         
-        printf("%d",pacienteNuevo->tipo);
         //vi. nuevoPaciente.Serología=0.
         pacienteNuevo->serologia=0;
 
@@ -199,15 +198,10 @@ void nuevoPaciente(int tipo){
         }else{
             pacienteNuevo->ant = ultimoPaciente;
             ultimoPaciente->sig = pacienteNuevo;
-            ultimoPaciente = nuevoPaciente;
+            ultimoPaciente = pacienteNuevo;
         }
         
         
-
-        printf("%d",cont);
-        aux=pacienteNuevo;
-        ultimoPaciente=pacienteNuevo;
-        pacienteNuevo->ant=aux;
         
 
     }else{
@@ -573,14 +567,10 @@ void *hiloEnfermero(void *arg) {
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 struct Paciente *sigPaciente = primerPaciente;
 
-                if (sigPaciente==NULL)
-                {
-                    printf("uwu");
-                }
+               printf("%d\n",sigPaciente->tipo);
                 
-//
-//
-                /* while(i < contadorPacientes && sigPaciente->sig != NULL) {
+
+                while(i < contadorPacientes && sigPaciente->sig != NULL) {
                     if(enfermero1.atendiendo == 0 && sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
@@ -633,7 +623,7 @@ void *hiloEnfermero(void *arg) {
                 }
 
                 i = 0;
-                sigPaciente = primerPaciente; */
+                sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
                 //while(i < contadorPacientes && sigPaciente->sig != NULL) {
