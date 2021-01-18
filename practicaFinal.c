@@ -77,7 +77,7 @@ void *hiloEnfermero(void *arg);
 void *hiloEstadistico(void *arg);
 void eliminarPaciente(struct Paciente *pacienteAEliminar);
 
-int main(int argc, char argv[]){
+int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atendido a todos los pacientes y se halla recibido la señal SIGINT
 
 //1. signal o sigaction SIGUSR1, paciente junior.
 	signal(SIGUSR1, nuevoPaciente);
