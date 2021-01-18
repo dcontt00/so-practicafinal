@@ -143,7 +143,7 @@ int main(int argc, char argv[]){
     pthread_create (&threadEnfermero2, NULL, hiloEnfermero, (void *)1);
     pthread_create (&threadEnfermero3, NULL, hiloEnfermero, (void *)2);
 //7. Crear el hilo médico.
-    pthread_create (&medico, NULL, hiloMedico, NULL);
+    //pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
     pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
 //9. Esperar por señales de forma infinita.
@@ -183,7 +183,7 @@ void nuevoPaciente(int tipo){
 
         if (signal(SIGPIPE,nuevoPaciente))
         {
-            pacienteNuevo->tipo=0;
+            pacienteNuevo->tipo=1;
         }
         
         //vi. nuevoPaciente.Serología=0.
@@ -356,10 +356,13 @@ void *hiloPaciente (void *arg) {
 	}
 	sprintf(mensaje, "EL paciente:%d abandona el consultorio", paciente->id);
 	pthread_mutex_lock(&mutexFichero);
-   	writeLogMessage("paciente"+paciente->id, mensaje);
+   	writeLogMessage("Paciente", mensaje);
    	pthread_mutex_unlock(&mutexFichero);
 
+	pthread_mutex_lock(&mutexColaPacientes);
     eliminarPaciente(paciente);
+	pthread_mutex_unlock(&mutexColaPacientes);
+
     free(paciente);
    	contadorPacientes --;
  	pthread_exit(NULL);
@@ -558,8 +561,9 @@ void *hiloMedico(void *arg){
 void *hiloEnfermero(void *arg) {
     //TODO Añadir a calcular reaccion
     char motivo[100];
+    char mensaje[100];
     int duerme;
-    int grupoVacunacion =  0;//FIXME: No se pasa bien el parámetro
+    int grupoVacunacion =  1;//FIXME: No se pasa bien el parámetro
     int i = 0;
 
 
@@ -627,69 +631,10 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                //while(i < contadorPacientes && sigPaciente->sig != NULL) {
-                //    if(enfermero1.atendiendo == 0 && sigPaciente->atendido == 0) {  
-                //        enfermero1.atendiendo = 1;
-                //        enfermero1.pacientesAtendidos++;
-//
-                //        int aleatorio = calculaRandom(0, 100);
-//
-                //        if(aleatorio < 80) {
-                //            duerme = calculaRandom(1, 4);
-                //            sprintf(motivo, "El paciente %d tiene todo en regla", sigPaciente->id);
-                //            sigPaciente->atendido = 2;
-                //        }else if(aleatorio < 90) {
-                //            duerme = calculaRandom(2, 6);
-                //            sprintf(motivo, "El paciente %d esta mal documentado", sigPaciente->id);
-                //            sigPaciente->atendido = 3;
-                //        }else {
-                //            duerme = calculaRandom(6, 10);
-                //            sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
-                //            sigPaciente->atendido = 6;
-                //        }
-                //    
-                //
-                //        pthread_mutex_lock(&mutexFichero);
-                //        writeLogMessage("Enfermero", "Comienza la atencion al paciente nº " + i);
-                //        pthread_mutex_unlock(&mutexFichero);
-//
-                //        sleep(duerme);
-                //        
-                //        pthread_mutex_lock(&mutexFichero);
-                //        writeLogMessage("Enfermero", "Termina la atencion al paciente mº " + i);
-                //        writeLogMessage("Paciente", motivo);
-                //        pthread_mutex_unlock(&mutexFichero);
-//
-                //        if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                //            enfermero1.atendiendo = 0;//
-                //            enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
-                //            sleep(5); //Descansa sus 5 segundos 
-                //            pthread_mutex_lock(&mutexFichero);
-                //            writeLogMessage("Enfermero", "Enfermer@_1 esta descansando");
-                //            pthread_mutex_unlock(&mutexFichero);
-                //        }
-//
-                //        sigPaciente->atendido = 1;//Marcamos el paciente como atendido
-                //        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
-                //    }
-                //    sigPaciente = sigPaciente->sig;
-                //    i++;
-                //}
-                //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
-                pthread_mutex_unlock(&mutexColaPacientes);
-                sleep(1);
-
-                break;
-            case 1:
-                i = 0;
-
-                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
-                sigPaciente = primerPaciente;
-
-                while(i < contadorPacientes && sigPaciente->sig != NULL) {  
-                    if(enfermero2.atendiendo == 0 && sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
-                        enfermero2.atendiendo = 1;
-                        enfermero2.pacientesAtendidos++;
+                while(i < contadorPacientes && sigPaciente != NULL) {
+                    if(enfermero1.atendiendo == 0 && sigPaciente->atendido == 0) {  
+                        enfermero1.atendiendo = 1;
+                        enfermero1.pacientesAtendidos++;
 
                         int aleatorio = calculaRandom(0, 100);
 
@@ -706,7 +651,8 @@ void *hiloEnfermero(void *arg) {
                             sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
                             sigPaciente->atendido = 6;
                         }
-
+                    
+                
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Enfermero", "Comienza la atencion al paciente nº " + i);
                         pthread_mutex_unlock(&mutexFichero);
@@ -714,7 +660,68 @@ void *hiloEnfermero(void *arg) {
                         sleep(duerme);
                         
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Enfermero", "Termina la atencion al paciente nº " + i);
+                        writeLogMessage("Enfermero", "Termina la atencion al paciente mº " + i);
+                        writeLogMessage("Paciente", motivo);
+                        pthread_mutex_unlock(&mutexFichero);
+
+                        if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
+                            enfermero1.atendiendo = 0;//
+                            enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                            sleep(5); //Descansa sus 5 segundos 
+                            pthread_mutex_lock(&mutexFichero);
+                            writeLogMessage("Enfermero", "Enfermer@_1 esta descansando");
+                            pthread_mutex_unlock(&mutexFichero);
+                        }
+
+                        sigPaciente->atendido = 1;//Marcamos el paciente como atendido
+                        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
+                    }
+                    sigPaciente = sigPaciente->sig;
+                    i++;
+                }
+                //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
+                pthread_mutex_unlock(&mutexColaPacientes);
+                sleep(1);
+
+                break;
+            case 1:
+                i = 0;
+
+                pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+                sigPaciente = primerPaciente;
+
+                while(i < contadorPacientes && sigPaciente != NULL) {  
+                    if(enfermero2.atendiendo == 0 && sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+                        enfermero2.atendiendo = 1;
+                        enfermero2.pacientesAtendidos++;
+
+                        int aleatorio = calculaRandom(0, 100);
+
+                        if(aleatorio < 80) {
+                            duerme = calculaRandom(1, 4);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
+
+                            sigPaciente->atendido = 2;
+                        }else if(aleatorio < 90) {
+                            duerme = calculaRandom(2, 6);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
+                            sigPaciente->atendido = 3;
+                        }else {
+                            duerme = calculaRandom(6, 10);
+                            sprintf(motivo, "Motivo por el que NO fue atendido:El paciente %d tiene gripe", sigPaciente->id);
+                            sigPaciente->atendido = 6;
+                        }
+
+                        pthread_mutex_lock(&mutexFichero);
+                        sprintf(mensaje, "Comienza la atencion al paciente nº %d\n",sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
+                        pthread_mutex_unlock(&mutexFichero);
+
+                        sleep(duerme);
+                        
+                        pthread_mutex_lock(&mutexFichero);
+                        sprintf(mensaje, "Termina la atencion al paciente nº %d\n",sigPaciente->id);
+                        writeLogMessage("Enfermero", mensaje);
                         writeLogMessage("Paciente", motivo);
                         pthread_mutex_unlock(&mutexFichero);
 
@@ -739,7 +746,7 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                while(i < contadorPacientes && sigPaciente->sig != NULL) {
+                while(i < contadorPacientes && sigPaciente != NULL) {
                     if(enfermero2.atendiendo == 0 && sigPaciente->atendido == 0) {  
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
@@ -748,15 +755,15 @@ void *hiloEnfermero(void *arg) {
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sprintf(motivo, "El paciente %d tiene todo en regla", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
                             sigPaciente->atendido = 2;
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sprintf(motivo, "El paciente %d esta mal documentado", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
                             sigPaciente->atendido = 3;
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que NO fue atendido: El paciente %d tiene gripe", sigPaciente->id);
                             sigPaciente->atendido = 6;
                         }
 
@@ -801,7 +808,7 @@ void *hiloEnfermero(void *arg) {
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 sigPaciente = primerPaciente;
 
-                while(i < contadorPacientes && sigPaciente->sig != NULL) {
+                while(i < contadorPacientes && sigPaciente != NULL) {
                     if(enfermero3.atendiendo == 0 && sigPaciente->tipo == 2 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -810,15 +817,15 @@ void *hiloEnfermero(void *arg) {
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sprintf(motivo, "El paciente %d tiene todo en regla", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
                             sigPaciente->atendido = 2;
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sprintf(motivo, "El paciente %d esta mal documentado", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
                             sigPaciente->atendido = 3;
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene gripe", sigPaciente->id);
                             sigPaciente->atendido = 6;
                         }
 
@@ -855,7 +862,7 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                while(i < contadorPacientes && sigPaciente->sig != NULL) {
+                while(i < contadorPacientes && sigPaciente != NULL) {
                     if(enfermero3.atendiendo == 0 && sigPaciente->atendido == 0) {  
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -864,15 +871,15 @@ void *hiloEnfermero(void *arg) {
 
                         if(aleatorio < 80) {
                             duerme = calculaRandom(1, 4);
-                            sprintf(motivo, "El paciente %d tiene todo en regla", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
                             sigPaciente->atendido = 2;
                         }else if(aleatorio < 90) {
                             duerme = calculaRandom(2, 6);
-                            sprintf(motivo, "El paciente %d esta mal documentado", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
                             sigPaciente->atendido = 3;
                         }else {
                             duerme = calculaRandom(6, 10);
-                            sprintf(motivo, "El paciente %d tiene gripe", sigPaciente->id);
+                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene gripe", sigPaciente->id);
                             sigPaciente->atendido = 6;
                         }
 
