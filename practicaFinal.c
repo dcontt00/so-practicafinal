@@ -51,7 +51,7 @@ struct Enfermero
      * Medios(16-60 años): 1
      * Senior(60+ años): 2
      */ 
-    int grupoVacunacion; // el enfermero trata Junior, Medios o Senior
+    int grupoVacunacion; 
     int atendiendo; //0 si esta libre, 1 si esta atendiendo a un paciente
     int pacientesAtendidos;
 };
@@ -111,6 +111,21 @@ int main(int argc, char argv[]){
     //}
 
     //d. Lista de enfermer@s (si se incluye).
+    enfermero1.atendiendo=0;
+    enfermero1.grupoVacunacion=0;
+    enfermero1.id=1;
+    enfermero1.pacientesAtendidos=0;
+
+    enfermero2.atendiendo=0;
+    enfermero2.grupoVacunacion=1;
+    enfermero2.id=2;
+    enfermero2.pacientesAtendidos=0;
+
+    enfermero3.atendiendo=0;
+    enfermero3.grupoVacunacion=2;
+    enfermero3.id=3;
+    enfermero3.pacientesAtendidos=0;
+
     //e. Fichero de Log
 
     logFile = fopen (logFileName, "w");
@@ -123,9 +138,9 @@ int main(int argc, char argv[]){
         exit(-1); 
     } 
 //6. Crear 3 hilos enfermer@s.
-    pthread_create (&threadEnfermero1, NULL, hiloMedico, NULL);
-    pthread_create (&threadEnfermero2, NULL, hiloMedico, NULL);
-    pthread_create (&threadEnfermero3, NULL, hiloMedico, NULL);
+    pthread_create (&threadEnfermero1, NULL, hiloMedico, (void *)&enfermero1);
+    pthread_create (&threadEnfermero2, NULL, hiloMedico, (void *)&enfermero2);
+    pthread_create (&threadEnfermero3, NULL, hiloMedico, (void *)&enfermero3);
 
 //7. Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
