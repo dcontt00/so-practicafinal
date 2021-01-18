@@ -511,7 +511,7 @@ if(contadorPacientes > 0){
 void *hiloEnfermero(void *arg) {
     char motivo[100];
     int duerme;
-    int grupoVacunacion = (int)*arg;
+    int grupoVacunacion = *(int *)arg;
 
     while(1) {
         switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna buscara en un sitio u otro
