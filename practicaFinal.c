@@ -901,7 +901,7 @@ void writeLogMessage(char *id, char *msg) {
 }
 
 void eliminarPaciente(struct Paciente *pacienteAEliminar){
-    pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
-    pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
-    free(pacienteAEliminar);
+	pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
+	pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
+	free(pacienteAEliminar);
 }
