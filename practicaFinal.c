@@ -257,18 +257,18 @@ void *hiloPaciente (void *arg) {
 
             }else{
                 if(comportamiento<=3){
-                        sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
-                        pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Paciente", mensaje);
-                        pthread_mutex_unlock(&mutexFichero);
-			            //eliminarPaciente(paciente);
-			            //free(paciente);
+                    sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
+                    pthread_mutex_lock(&mutexFichero);
+                    writeLogMessage("Paciente", mensaje);
+                    pthread_mutex_unlock(&mutexFichero);
+			        //eliminarPaciente(paciente);
+			        //free(paciente);
 
-                        contadorPacientes --;
-                        pthread_exit((void *)1);
+                    contadorPacientes --;
+                    pthread_exit((void *)1);
                 }else{
                     comportamiento=calculaRandom(1,100);
-                      printf("random(2)%d\n",comportamiento);
+                    printf("random(2)%d\n",comportamiento);
 
                     if(comportamiento<=5){
                         sprintf(mensaje, "El paciente: %d se va al baño y pierde su turno.\n", paciente->id);
@@ -290,12 +290,12 @@ void *hiloPaciente (void *arg) {
         if(atendido==6){
         	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente->id);
         	eliminarPaciente(paciente);
-                free(paciente);
+            free(paciente);
         	contadorPacientes --;
         	pthread_exit;
         }else{
         	//comprueba si da reaccion si da reaccion a la vacuna.
-		pthread_mutex_lock(&mutexColaPacientes);
+		    pthread_mutex_lock(&mutexColaPacientes);
     		atendido = paciente->atendido;
     		pthread_mutex_unlock(&mutexColaPacientes);
         	if(atendido==4){
@@ -313,9 +313,9 @@ void *hiloPaciente (void *arg) {
         		comportamiento = calculaRandom(1,100);
         		if(comportamiento<=25){
         			sprintf(mensaje,"El paciente: %d decide participar en la prueba serologica", paciente->id);
-				pthread_mutex_lock(&mutexColaPacientes);
+				    pthread_mutex_lock(&mutexColaPacientes);
         			paciente->serologia==1;
-				pthread_mutex_unlock(&mutexColaPacientes);
+				    pthread_mutex_unlock(&mutexColaPacientes);
         			pthread_cond_signal(&varEstadistico);
         			sprintf(mensaje, "El paciente: %d esta preparado para el estudio.\n", paciente->id);
         			pthread_mutex_lock(&mutexFichero);
@@ -330,7 +330,7 @@ void *hiloPaciente (void *arg) {
         		}else{
         			sprintf(mensaje, "El paciente: %d no va a participar en la prueba serologica", paciente->id);
         		}
-     	  }
+     	    }
 
         }
 	}
@@ -338,8 +338,8 @@ void *hiloPaciente (void *arg) {
 	pthread_mutex_lock(&mutexFichero);
    	writeLogMessage("paciente"+paciente->id, mensaje);
    	pthread_mutex_unlock(&mutexFichero);
-    	eliminarPaciente(paciente);
-        free(paciente);
+    eliminarPaciente(paciente);
+    free(paciente);
    	contadorPacientes --;
  	pthread_exit(NULL);
 
@@ -362,7 +362,7 @@ void *hiloMedico(void *arg){
 	while(1){
 		paciente = NULL;
 		while(paciente == NULL){
-if(contadorPacientes > 0){
+            if(contadorPacientes > 0){
 				//Como accedemos a la lista bloqueamos el mutex
 				pthread_mutex_lock(&mutexColaPacientes);
 				/*
@@ -426,24 +426,24 @@ if(contadorPacientes > 0){
 						}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
 							int i = pacientesAntiguos[1];
 							sigPaciente = primerPaciente;      
-                                                        while(i > 0){                  
-                                                                sigPaciente = sigPaciente->sig;
+                            while(i > 0){                  
+                                sigPaciente = sigPaciente->sig;
 								i--;
-                                                        }
-                                                        paciente = sigPaciente;
+                            }
+                            paciente = sigPaciente;
 						}else{
 							int i = pacientesAntiguos[2];
 							sigPaciente = primerPaciente;
-                                                        while(i > 0){                  
-                                                                sigPaciente = sigPaciente->sig;
-                                                                i--;
-                                                        }
-                                                        paciente = sigPaciente;
+                            while(i > 0){                  
+                                sigPaciente = sigPaciente->sig;
+                                i--;
+                            }
+                            paciente = sigPaciente;
 						}
 
 						reaccion = 0;
 						//Se le cambia el flag de atendido al paciente si es un paciente para vacunar
-                        	                paciente->atendido = 1;
+                        paciente->atendido = 1;
 			
 					}
 				}else{
@@ -503,9 +503,9 @@ if(contadorPacientes > 0){
 		}
 		//Escribe en el fichero que termina la atencion
 		sprintf(mensaje, "Termina la atencion al paciente nº%d", paciente->id);
-                pthread_mutex_lock(&mutexFichero);
-                writeLogMessage("Medico", mensaje);
-                pthread_mutex_unlock(&mutexFichero);
+        pthread_mutex_lock(&mutexFichero);
+        writeLogMessage("Medico", mensaje);
+        pthread_mutex_unlock(&mutexFichero);
     }	
 }
 
@@ -879,8 +879,8 @@ void *hiloEstadistico(void *arg){
 		pthread_mutex_unlock(&mutexFichero);
 		sleep(4);
 		pthread_mutex_lock(&mutexFichero);
-                writeLogMessage("Estadistico", "Termina la actividad");               
-                pthread_mutex_unlock(&mutexFichero);
+        writeLogMessage("Estadistico", "Termina la actividad");               
+        pthread_mutex_unlock(&mutexFichero);
 		pthread_cond_signal(&varPacientes);
 	}
 }
