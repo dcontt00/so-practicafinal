@@ -248,6 +248,7 @@ void *hiloPaciente (void *arg) {
         printf("El paciente: %d no esta siendo atentido\n",paciente->id);
         do{
             pthread_mutex_lock(&mutexColaPacientes);
+            
             atendido = paciente->atendido;
             pthread_mutex_unlock(&mutexColaPacientes);
             comportamiento=calculaRandom(1,10);
@@ -260,12 +261,11 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente", mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-                        printf("%d",3);
-			            eliminarPaciente(paciente);
-			            free(paciente);
+			            //eliminarPaciente(paciente);
+			            //free(paciente);
 
                         contadorPacientes --;
-                        pthread_exit;
+                        pthread_exit((void *)1);
                 }else{
                     comportamiento=calculaRandom(1,100);
                       printf("random(2)%d\n",comportamiento);
