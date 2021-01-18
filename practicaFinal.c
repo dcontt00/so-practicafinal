@@ -193,7 +193,6 @@ void nuevoPaciente(int tipo){
         pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
         if (primerPaciente==NULL){
-            printf("uwu");
             primerPaciente=pacienteNuevo;
             ultimoPaciente = primerPaciente;
         }else{
@@ -251,7 +250,7 @@ void *hiloPaciente (void *arg) {
     sleep(3);
     
     pthread_mutex_lock(&mutexColaPacientes);
-    atendido = paciente->atendido;
+    //atendido = paciente->atendido;
     pthread_mutex_unlock(&mutexColaPacientes);
     
     if(atendido==1){
@@ -354,17 +353,18 @@ void *hiloPaciente (void *arg) {
 
         }
 	}
+	pthread_mutex_lock(&mutexColaPacientes);
+    eliminarPaciente(paciente);
+   	contadorPacientes --;
+	pthread_mutex_unlock(&mutexColaPacientes);
+
 	sprintf(mensaje, "EL paciente:%d abandona el consultorio", paciente->id);
 	pthread_mutex_lock(&mutexFichero);
    	writeLogMessage("Paciente", mensaje);
    	pthread_mutex_unlock(&mutexFichero);
 
-	pthread_mutex_lock(&mutexColaPacientes);
-    eliminarPaciente(paciente);
-	pthread_mutex_unlock(&mutexColaPacientes);
 
     free(paciente);
-   	contadorPacientes --;
  	pthread_exit(NULL);
 
   }
@@ -691,6 +691,8 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
 
                 while(i < contadorPacientes && sigPaciente != NULL) {  
+                    
+
                     if(enfermero2.atendiendo == 0 && sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
@@ -980,7 +982,6 @@ void writeLogMessage(char *id, char *msg) {
 }
 
 void eliminarPaciente(struct Paciente *pacienteAEliminar){
-    printf("%d",3);
 
 	if(pacienteAEliminar->ant != NULL && pacienteAEliminar->sig != NULL){
 		pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
