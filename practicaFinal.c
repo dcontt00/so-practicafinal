@@ -193,6 +193,7 @@ void nuevoPaciente(int tipo){
         pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, NULL);
         if (primerPaciente==NULL){
+            printf("uwu");
             primerPaciente=pacienteNuevo;
             ultimoPaciente = primerPaciente;
         }else{
@@ -561,16 +562,16 @@ void *hiloEnfermero(void *arg) {
     int grupoVacunacion =  0;//FIXME: No se pasa bien el parámetro
     int i = 0;
 
+
     while(1) {
         switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna buscara en un sitio u otro
             case 0: 
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 struct Paciente *sigPaciente = primerPaciente;
 
-               printf("%d\n",sigPaciente->tipo);
                 
-
-                while(i < contadorPacientes && sigPaciente->sig != NULL) {
+                
+                while(i < contadorPacientes && sigPaciente != NULL) {
                     if(enfermero1.atendiendo == 0 && sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
