@@ -259,8 +259,8 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-                            //TODO: Eliminar paciente de la cola
-                        //paciente=NULL;
+			eliminarPaciente(&paciente);
+			free(paciente);
                         contadorPacientes --;
                         pthread_exit;
                 }else{
@@ -270,8 +270,8 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage("Paciente"+paciente->id, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-                            //TODO: Eliminar paciente de la cola
-                        //paciente=NULL;
+			eliminarPaciente(&paciente);
+                        free(paciente);
                         contadorPacientes --;
                         pthread_exit;
                     }else{
@@ -284,8 +284,8 @@ void *hiloPaciente (void *arg) {
         //compruebo si el paciente tiene gripe.
         if(atendido==6){
         	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente->id);
-        	//paciente=NULL;
-           	//TODO: Eliminar paciente de la cola
+        	eliminarPaciente(&paciente);
+                free(paciente);
         	contadorPacientes --;
         	pthread_exit;
         }else{
@@ -333,8 +333,8 @@ void *hiloPaciente (void *arg) {
 	pthread_mutex_lock(&mutexFichero);
    	writeLogMessage("paciente"+paciente->id, mensaje);
    	pthread_mutex_unlock(&mutexFichero);
-    	//TODO: Eliminar paciente de la cola
-   	//paciente=NULL;
+    	eliminarPaciente(&paciente);
+        free(paciente);
    	contadorPacientes --;
  	pthread_exit(NULL);
 
@@ -916,7 +916,14 @@ void writeLogMessage(char *id, char *msg) {
 }
 
 void eliminarPaciente(struct Paciente *pacienteAEliminar){
-	pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
-	pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
-	free(pacienteAEliminar);
+	if(pacienteAEliminar->ant != NULL && pacienteAEliminar->sig != NULL){
+		pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
+		pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
+	}else if( pacienteAEliminar->ant != NULL){
+		primerPaciente = pacienteAEliminar->sig;
+		pacienteAEliminar->sig->ant = NULL;
+	}else if( pacienteAEliminar->sig != NULL){
+		ultimoPaciente = pacienteAEliminar->ant;
+		pacienteAEliminar->ant->sig = NULL;
+	} 
 }
