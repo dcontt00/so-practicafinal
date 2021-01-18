@@ -511,10 +511,10 @@ void *hiloMedico(void *arg){
 void *hiloEnfermero(void *arg) {
     char motivo[100];
     int duerme;
-
+    int grupoVacunacion = (int)*arg;
 
     while(1) {
-        switch(Enfermero.grupoVacunacion) { //Sabiendo el grupo al que  vacuna buscara en un sitio u otro
+        switch(grupoVacunacion) { //Sabiendo el grupo al que  vacuna buscara en un sitio u otro
             case 0: 
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 struct Paciente *sigPaciente = primerPaciente;
