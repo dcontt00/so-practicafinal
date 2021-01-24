@@ -177,7 +177,7 @@ void nuevoPaciente(int tipo){
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
         //i. Se añade el paciente.
         struct Paciente *pacienteNuevo;
-        pacienteNuevo=(struct Paciente *)malloc(sizeof(struct Paciente));
+        pacienteNuevo=malloc(sizeof *pacienteNuevo);
         //ii. Contador de pacientes se incrementa.
         contadorPacientes++;
 
@@ -186,6 +186,9 @@ void nuevoPaciente(int tipo){
 
         //iv. nuevoPaciente.atendido=0
         pacienteNuevo->atendido=0;
+
+	pacienteNuevo->sig=NULL;
+	pacienteNuevo->ant=NULL;
 
         //v. tipo=Depende de la señal recibida.
         if (tipo == SIGUSR1){
