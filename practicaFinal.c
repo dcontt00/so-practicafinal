@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 
 // Compilar con -lpthread
 
@@ -74,25 +75,31 @@ void *hiloPaciente (void *arg);
 void *hiloMedico(void *arg);
 void *hiloEnfermero(void *arg);
 void *hiloEstadistico(void *arg);
-void eliminarPaciente(struct Paciente *pacienteAEliminar);
+void eliminarPaciente(struct Paciente **pacienteAEliminar);
 
 int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atendido a todos los pacientes y se halla recibido la señal SIGINT
 //1. signal o sigaction SIGUSR1, paciente junior.
 	if(signal(SIGUSR1, &nuevoPaciente) == SIG_ERR){
-	    exit(-1);
+		perror("Llamada a signal");
+		exit(-1);
 	}
 
 //2. signal o sigaction SIGUSR2, paciente medio.
-    if(signal(SIGUSR2, &nuevoPaciente) == SIG_ERR){
-        exit(-1);
-    }
+    	if(signal(SIGUSR2, &nuevoPaciente) == SIG_ERR){
+		perror("Llamada a signal");
+        	exit(-1);
+    	}
 //3. signal o sigaction SIGPIPE, paciente senior.
-    if(signal(SIGPIPE, &nuevoPaciente) == SIG_ERR){
-        exit(-1);
-    }
+	if(signal(SIGPIPE, &nuevoPaciente) == SIG_ERR){
+		perror("Llamada a signal");
+		exit(-1);
+    	}
 
 //4. signal o sigaction SIGINT, terminar
-    signal(SIGINT, SIG_DFL); // La señal por defecto de SIGINT es suspender la ejecución
+    	if(signal(SIGINT, SIG_DFL) == SIG_ERR){
+		perror("Llamada a signal");
+	    	exit(-1);
+    	} // La señal por defecto de SIGINT es suspender la ejecución
 //5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
     //a. Semáforos.
     if (pthread_mutex_init(&mutexFichero, NULL)!=0){
@@ -156,12 +163,15 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 	    pause();
 	    printf("Bucle 1: Esperando");
     }
-    
+    printf("Bucle 1: Terminado");
 }
 
 void nuevoPaciente(int tipo){
     printf("entre");
-    signal(tipo, &nuevoPaciente);
+    if(signal(tipo, &nuevoPaciente) == SIG_ERR){
+	    perror("Llamada a signal");
+	    exit(-1);
+    } 
    //1. Comprobar si hay espacio en la lista de pacientes.
     pthread_mutex_lock(&mutexColaPacientes);
     if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
@@ -178,7 +188,6 @@ void nuevoPaciente(int tipo){
         pacienteNuevo->atendido=0;
 
         //v. tipo=Depende de la señal recibida.
-        //FIXME: siempre se asigna senior
         if (tipo == SIGUSR1){
             pacienteNuevo->tipo=0;
         }
@@ -213,7 +222,6 @@ void nuevoPaciente(int tipo){
 
     }
     pthread_mutex_unlock(&mutexColaPacientes);
-    return;
 }
 
 
@@ -229,16 +237,16 @@ void *hiloPaciente (void *arg) {
     paciente = ultimoPaciente;
     switch(paciente->tipo){
     	case 0:
-    	sprintf(type, "%s%d %s","Paciente", paciente->id, "Junior");
+    	sprintf(type, "%s%d %s","Paciente ", paciente->id, "Junior");
     	break;
     	case 1:
-    	sprintf(type, "%s%d %s","Paciente", paciente->id, "Medio");
+    	sprintf(type, "%s%d %s","Paciente ", paciente->id, "Medio");
     	break;
     	case 2:
-    	sprintf(type, "%s%d %s","Paciente", paciente->id, "Senior");
+    	sprintf(type, "%s%d %s","Paciente ", paciente->id, "Senior");
     	break;
     	default:
-    	sprintf(type, "%s%d %s","Paciente", paciente->id, "Desconocido");
+    	sprintf(type, "%s%d %s","Paciente ", paciente->id, "Desconocido");
     	break;
     }
     atendido = paciente->atendido;
@@ -251,16 +259,12 @@ void *hiloPaciente (void *arg) {
 
     sleep(3);
     
-    //pthread_mutex_lock(&mutexColaPacientes);
-    //pthread_mutex_unlock(&mutexColaPacientes);
-    
     if(atendido==1){
         printf("El paciente: %d esta siendo atentido\n", paciente->id);
     }else{
         printf("El paciente: %d no esta siendo atentido\n",paciente->id);
         do{
             pthread_mutex_lock(&mutexColaPacientes);
-            
             atendido = paciente->atendido;
             pthread_mutex_unlock(&mutexColaPacientes);
             comportamiento=calculaRandom(1,10);
@@ -271,13 +275,16 @@ void *hiloPaciente (void *arg) {
                 if(comportamiento<=3){
                         sprintf(mensaje,"El paciente: %d abandona la consulta\n", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Paciente", mensaje);
+                        writeLogMessage(type, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			            //eliminarPaciente(paciente);
-			            free(paciente);
 
+			pthread_mutex_lock(&mutexColaPacientes);
+			eliminarPaciente(&paciente);
+			free(paciente);
                         contadorPacientes --;
-                        pthread_exit((void *)0);
+			pthread_mutex_unlock(&mutexColaPacientes);
+
+                        pthread_exit(NULL);
                 }else{
                     comportamiento=calculaRandom(1,100);
                     printf("random(2)%d\n",comportamiento);
@@ -286,17 +293,20 @@ void *hiloPaciente (void *arg) {
                     if(comportamiento<=5){
                         sprintf(mensaje, "El paciente: %d se va al baño y pierde su turno.\n", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Paciente", mensaje);
+                        writeLogMessage(type, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			            //eliminarPaciente(*paciente);
+			pthread_mutex_lock(&mutexColaPacientes);
+                        eliminarPaciente(&paciente);
                         free(paciente);
-                        contadorPacientes --;
-                        pthread_exit((void *)0);
+                        contadorPacientes --;                     
+                        pthread_mutex_unlock(&mutexColaPacientes);
+                        pthread_exit(NULL);
+			printf("Sigo aqui");
 
                     }else{
                         sprintf(mensaje, "El paciente: %d decide esperar a su turno", paciente->id);
                         pthread_mutex_lock(&mutexFichero);
-                        writeLogMessage("Paciente", mensaje);
+                        writeLogMessage(type, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
                         sleep(3);
                     }
@@ -306,13 +316,15 @@ void *hiloPaciente (void *arg) {
         //compruebo si el paciente tiene gripe.
         if(atendido==6){
         	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente->id);
-        	eliminarPaciente(paciente);
-            free(paciente);
-        	contadorPacientes --;
-        	pthread_exit;
+        	pthread_mutex_lock(&mutexColaPacientes);
+                eliminarPaciente(&paciente);
+                free(paciente);
+        	contadorPacientes --;                                              
+ 		pthread_mutex_unlock(&mutexColaPacientes);
+        	pthread_exit(NULL);
         }else{
         	//comprueba si da reaccion si da reaccion a la vacuna.
-		    pthread_mutex_lock(&mutexColaPacientes);
+		pthread_mutex_lock(&mutexColaPacientes);
     		atendido = paciente->atendido;
     		pthread_mutex_unlock(&mutexColaPacientes);
 
@@ -327,22 +339,22 @@ void *hiloPaciente (void *arg) {
         		}
         		
         	}else{
-				pthread_mutex_lock(&mutexFichero);
-                sprintf(mensaje, "El paciente: %d no ha dado reaccion", paciente->id);
-                writeLogMessage("Paciente", mensaje);
+			pthread_mutex_lock(&mutexFichero);
+                	sprintf(mensaje, "El paciente: %d no ha dado reaccion", paciente->id);
+                	writeLogMessage(type, mensaje);
     			pthread_mutex_unlock(&mutexFichero);
 
         		comportamiento = calculaRandom(1,100);
         		if(comportamiento<=25){
         			sprintf(mensaje,"El paciente: %d decide participar en la prueba serologica", paciente->id);
-				    pthread_mutex_lock(&mutexColaPacientes);
+				pthread_mutex_lock(&mutexColaPacientes);
         			paciente->serologia==1;
-				    pthread_mutex_unlock(&mutexColaPacientes);
+				pthread_mutex_unlock(&mutexColaPacientes);
 
         			pthread_cond_signal(&varEstadistico);
         			sprintf(mensaje, "El paciente: %d esta preparado para el estudio.\n", paciente->id);
         			pthread_mutex_lock(&mutexFichero);
-    				writeLogMessage("Paciente", mensaje);
+    				writeLogMessage(type, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
 
 				pthread_mutex_lock(&mutexColaPacientes);//TODO Crear un nuevo mutex para estadistico?
@@ -350,28 +362,31 @@ void *hiloPaciente (void *arg) {
 				pthread_mutex_unlock(&mutexColaPacientes);
         			sprintf(mensaje, "El paciente: %d abandona el estudio\n", paciente->id);
         			pthread_mutex_lock(&mutexFichero);
-    				writeLogMessage("Paciente"i, mensaje);
+    				writeLogMessage(type, mensaje);
     				pthread_mutex_unlock(&mutexFichero);
 
         		}else{
         			sprintf(mensaje, "El paciente: %d no va a participar en la prueba serologica", paciente->id);
-        		}
-     	    }
+				pthread_mutex_lock(&mutexFichero);
+	                        writeLogMessage(type, mensaje); 
+ 				pthread_mutex_unlock(&mutexFichero);
 
-        }
+        		}
+     		    }
+
+        	}
 	}
+    	sprintf(mensaje, "EL paciente:%d abandona el consultorio", paciente->id);
+        pthread_mutex_lock(&mutexFichero);
+        writeLogMessage(type, mensaje);
+ 	pthread_mutex_unlock(&mutexFichero);
+
 	pthread_mutex_lock(&mutexColaPacientes);
-    eliminarPaciente(paciente);
+	eliminarPaciente(&paciente);
+	free(paciente);
    	contadorPacientes --;
 	pthread_mutex_unlock(&mutexColaPacientes);
 
-	sprintf(mensaje, "EL paciente:%d abandona el consultorio", paciente->id);
-	pthread_mutex_lock(&mutexFichero);
-   	writeLogMessage("Paciente", mensaje);
-   	pthread_mutex_unlock(&mutexFichero);
-
-
-    free(paciente);
  	pthread_exit(NULL);
 
   }
@@ -998,16 +1013,21 @@ void writeLogMessage(char *id, char *msg) {
     fclose(logFile);
 }
 
-void eliminarPaciente(struct Paciente *pacienteAEliminar){
-
-	if(pacienteAEliminar->ant != NULL && pacienteAEliminar->sig != NULL){
-		pacienteAEliminar->ant->sig=pacienteAEliminar->sig;
-		pacienteAEliminar->sig->ant = pacienteAEliminar->ant;
-	}else if( pacienteAEliminar->ant != NULL){
-		primerPaciente = pacienteAEliminar->sig;
-		pacienteAEliminar->sig->ant = NULL;
-	}else if( pacienteAEliminar->sig != NULL){
-		ultimoPaciente = pacienteAEliminar->ant;
-		pacienteAEliminar->ant->sig = NULL;
-	} 
+void eliminarPaciente(struct Paciente **pacienteAEliminar){
+	printf("Eliminar Paciente %d\n", (*pacienteAEliminar)->id);
+	if((*pacienteAEliminar)->ant != NULL && (*pacienteAEliminar)->sig != NULL){
+		(*pacienteAEliminar)->ant->sig=(*pacienteAEliminar)->sig;
+		(*pacienteAEliminar)->sig->ant = (*pacienteAEliminar)->ant;
+	}else if((*pacienteAEliminar)->ant != NULL){
+		primerPaciente = (*pacienteAEliminar)->sig;
+		(*pacienteAEliminar)->sig->ant = NULL;
+	}else if((*pacienteAEliminar)->sig != NULL){
+		ultimoPaciente = (*pacienteAEliminar)->ant;
+		(*pacienteAEliminar)->ant->sig = NULL;
+	}else{
+		(*pacienteAEliminar) = NULL;
+		primerPaciente = NULL;
+		ultimoPaciente = NULL;
+	}
+	printf("Eliminado el paciente \n");
 }
