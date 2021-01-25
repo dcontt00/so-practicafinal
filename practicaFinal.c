@@ -674,14 +674,6 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
 		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
 
-<<<<<<< HEAD
-                //No hay pacientes de tipo1, buscamos de otros tipos
-                while(sigPaciente != NULL) {
-                    if(enfermero1.atendiendo == 0 && sigPaciente->atendido == 0) {  
-                        enfermero1.atendiendo = 1;
-                        enfermero1.pacientesAtendidos++;
-=======
->>>>>>> 6e0974580bab733d4457deee31cd1347616c7541
 
                 if(enfermero2.atendiendo == 0 || enfermero3.atendiendo == 0) {
                 //No hay pacientes de tipo1, buscamos de otros tipos
@@ -805,14 +797,6 @@ void *hiloEnfermero(void *arg) {
 		        sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-<<<<<<< HEAD
-                while(sigPaciente != NULL) {
-                    if(enfermero2.atendiendo == 0 && sigPaciente->atendido == 0) {  
-                        enfermero2.atendiendo = 1;
-                        enfermero2.pacientesAtendidos++;
-
-                        int aleatorio = calculaRandom(0, 100);
-=======
                 if(enfermero1.atendiendo == 0 || enfermero3.atendiendo == 0) {
                     while(i < contadorPacientes && sigPaciente != NULL) {
                         if(enfermero2.atendiendo == 0 && sigPaciente->atendido == 0) {  
@@ -834,7 +818,6 @@ void *hiloEnfermero(void *arg) {
                                 sprintf(motivo, "Motivo por el que NO fue atendido: El paciente %d tiene gripe", sigPaciente->id);
                                 sigPaciente->atendido = 6;
                             }
->>>>>>> 6e0974580bab733d4457deee31cd1347616c7541
 
                             sprintf(mensaje, "Comienza la atencion al paciente nº %d", sigPaciente->id);
                             pthread_mutex_lock(&mutexFichero);
@@ -937,34 +920,6 @@ void *hiloEnfermero(void *arg) {
 		        pthread_mutex_lock(&mutexColaPacientes);
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-<<<<<<< HEAD
-                while(igPaciente != NULL) {
-                    if(enfermero3.atendiendo == 0 && sigPaciente->atendido == 0) {  
-                        enfermero3.atendiendo = 1;
-                        enfermero3.pacientesAtendidos++;
-
-                        int aleatorio = calculaRandom(0, 100);
-
-                        if(aleatorio < 80) {
-                            duerme = calculaRandom(1, 4);
-                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene todo en regla", sigPaciente->id);
-                            sigPaciente->atendido = 2;
-                        }else if(aleatorio < 90) {
-                            duerme = calculaRandom(2, 6);
-                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d esta mal documentado", sigPaciente->id);
-                            sigPaciente->atendido = 3;
-                        }else {
-                            duerme = calculaRandom(6, 10);
-                            sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene gripe", sigPaciente->id);
-                            sigPaciente->atendido = 6;
-                        }
-
-                        writeLogMessage("Enfermero3", motivo);
-                        pthread_mutex_lock(&mutexFichero);
-                        sprintf(mensaje, "Comienza la atencion al paciente nº %d", sigPaciente->id);
-                        writeLogMessage("Enfermero3", mensaje);
-                        pthread_mutex_unlock(&mutexFichero);
-=======
                 if(enfermero1.atendiendo == 0 || enfermero2.atendiendo == 0) {
                     while(i < contadorPacientes && sigPaciente != NULL) {
                         if(enfermero3.atendiendo == 0 && sigPaciente->atendido == 0) {  
@@ -986,7 +941,6 @@ void *hiloEnfermero(void *arg) {
                                 sprintf(motivo, "Motivo por el que fue atendido: El paciente %d tiene gripe", sigPaciente->id);
                                 sigPaciente->atendido = 6;
                             }
->>>>>>> 6e0974580bab733d4457deee31cd1347616c7541
 
                             writeLogMessage("Enfermero3", motivo);
                             pthread_mutex_lock(&mutexFichero);
