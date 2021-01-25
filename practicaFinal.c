@@ -79,6 +79,7 @@ void eliminarPaciente(struct Paciente **pacienteAEliminar);
 
 int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atendido a todos los pacientes y se halla recibido la señal SIGINT
 //1. signal o sigaction SIGUSR1, paciente junior.
+    srand (time(NULL));
 	if(signal(SIGUSR1, &nuevoPaciente) == SIG_ERR){
 		perror("Llamada a signal");
 		exit(-1);
@@ -171,7 +172,7 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 
 void nuevoPaciente(int tipo){
     printf("entre");
-    if(signal(tipo, &nuevoPaciente) == SIG_ERR){
+    if(signal(tipo, nuevoPaciente) == SIG_ERR){
 	    perror("Llamada a signal");
 	    exit(-1);
     } 
@@ -255,7 +256,6 @@ void *hiloPaciente (void *arg) {
     	sprintf(type, "%s%d %s","Paciente ", paciente->id, "Desconocido");
     	break;
     }
-    atendido = paciente->atendido;
     pthread_mutex_unlock(&mutexColaPacientes);
 
     sprintf(mensaje, "Entra el Paciente");
@@ -263,7 +263,7 @@ void *hiloPaciente (void *arg) {
     writeLogMessage(type, mensaje);
     pthread_mutex_unlock(&mutexFichero);
 
-    sleep(3);
+    //sleep(3);
     
     if(atendido==1){
         printf("El paciente: %d esta siendo atentido\n", paciente->id);
@@ -590,7 +590,7 @@ void *hiloEnfermero(void *arg) {
     char motivo[100];
     char mensaje[100];
     int duerme;
-    int grupoVacunacion =* (int*) arg;//FIXME: No se pasa bien el parámetro
+    int grupoVacunacion =* (int*) arg;  
     int i;
     struct Paciente *sigPaciente;
 
@@ -600,11 +600,17 @@ void *hiloEnfermero(void *arg) {
             case 0: 
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 sigPaciente = primerPaciente;
+        		pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
+
 		        i = 0;
                 
                 
-                while(i < contadorPacientes && sigPaciente != NULL) {
+                while(sigPaciente != NULL) {
+                    pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+
                     if(enfermero1.atendiendo == 0 && sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
+        		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
+
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
 
@@ -647,21 +653,29 @@ void *hiloEnfermero(void *arg) {
                             pthread_mutex_unlock(&mutexFichero);
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
+                        pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+
 
                         sigPaciente->atendido = 1;//Marcamos el paciente como atendido
+        		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
+
                     }
+                    pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
+
                     sigPaciente = sigPaciente->sig;
+        		    pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
+
                     i++;
                 }
 
-		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
 
 		        pthread_mutex_lock(&mutexColaPacientes);
                 i = 0;
                 sigPaciente = primerPaciente;
+		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                while(i < contadorPacientes && sigPaciente != NULL) {
+                while(sigPaciente != NULL) {
                     if(enfermero1.atendiendo == 0 && sigPaciente->atendido == 0) {  
                         enfermero1.atendiendo = 1;
                         enfermero1.pacientesAtendidos++;
@@ -720,7 +734,7 @@ void *hiloEnfermero(void *arg) {
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 sigPaciente = primerPaciente;
 
-                while(i < contadorPacientes && sigPaciente != NULL) {  
+                while(sigPaciente != NULL) {  
                     printf("repeticion: i:%d", i);
 
                     if(enfermero2.atendiendo == 0 && sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
@@ -780,7 +794,7 @@ void *hiloEnfermero(void *arg) {
 		sigPaciente = primerPaciente;
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                while(i < contadorPacientes && sigPaciente != NULL) {
+                while(sigPaciente != NULL) {
                     if(enfermero2.atendiendo == 0 && sigPaciente->atendido == 0) {  
                         enfermero2.atendiendo = 1;
                         enfermero2.pacientesAtendidos++;
@@ -843,7 +857,7 @@ void *hiloEnfermero(void *arg) {
                 pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder al mutex
                 sigPaciente = primerPaciente;
 
-                while(i < contadorPacientes && sigPaciente != NULL) {
+                while(sigPaciente != NULL) {
                     if(enfermero3.atendiendo == 0 && sigPaciente->tipo == 2 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -901,7 +915,7 @@ void *hiloEnfermero(void *arg) {
 		pthread_mutex_lock(&mutexColaPacientes);
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                while(i < contadorPacientes && sigPaciente != NULL) {
+                while(igPaciente != NULL) {
                     if(enfermero3.atendiendo == 0 && sigPaciente->atendido == 0) {  
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
