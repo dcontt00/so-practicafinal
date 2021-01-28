@@ -661,7 +661,7 @@ void *hiloEnfermero(void *arg) {
                         sleep(duerme);
 
                         pthread_mutex_lock(&mutexFichero);
-                        if (aleatorio<90)
+                        if (aleatorio<90) //IGUAL TENDRIA QUE VOLVER A GENERAR EL ALEATORIO
                         {
                             sprintf(mensaje, "Termina la atencion al paciente nº %d", sigPaciente->id);
                             writeLogMessage("Enfermero1", mensaje);
@@ -673,7 +673,7 @@ void *hiloEnfermero(void *arg) {
                         
 
                         if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                            enfermero1.atendiendo = 0;//
+                            enfermero1.atendiendo = 0;//SE PODRIA ELI
                             enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
 
                             sleep(5); //Descansa sus 5 segundos 
@@ -764,7 +764,7 @@ void *hiloEnfermero(void *arg) {
                 //No ha encontrados pacientes, entonces libera mutex y duerme un sec para volver a empezar a buscar
                 sleep(1);
 
-                //break;
+                //break; //POR QUE ESTA COMENTADO?
              case 1:
                 i = 0;
 
