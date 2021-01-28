@@ -739,9 +739,10 @@ void *hiloEnfermero(void *arg) {
                             writeLogMessage("Enfermero1",mensaje);
                             writeLogMessage("Enfermero1", motivo);
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero1.atendiendo = 0;
 
                             if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                                enfermero1.atendiendo = 0;//
+                                enfermero1.atendiendo = 0;//ESTO SE PODRIA QUITAR YA QUE CUANDO LLEGA AL IF ES SI O SI 0
                                 enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                                 sleep(5); //Descansa sus 5 segundos 
                                 pthread_mutex_lock(&mutexFichero);
@@ -808,9 +809,10 @@ void *hiloEnfermero(void *arg) {
                         writeLogMessage("Enfermero2", mensaje);
                         writeLogMessage("Enfermero2", motivo);
                         pthread_mutex_unlock(&mutexFichero);
+                        enfermero2.atendiendo = 0;
 
                         if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                            enfermero2.atendiendo = 0;//
+                            enfermero2.atendiendo = 0;//ESTE SE PODRIA QUITAR
                             enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos 
                             pthread_mutex_lock(&mutexFichero);
@@ -876,9 +878,9 @@ void *hiloEnfermero(void *arg) {
                             pthread_mutex_lock(&mutexFichero);
                             sprintf(mensaje, "Termina la atencion al paciente nº %d", sigPaciente->id);
                             writeLogMessage("Enfermero2", mensaje);
-
                             writeLogMessage("Enfermero2", motivo);
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero.atendiendo = 0;
 
                             if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                                 enfermero2.atendiendo = 0;//
@@ -919,7 +921,7 @@ void *hiloEnfermero(void *arg) {
 		            pthread_mutex_lock(&mutexColaPacientes);
 
                     if(enfermero3.atendiendo == 0 && sigPaciente->tipo == 2 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
-                    pthread_mutex_unlock(&mutexColaPacientes);
+                        pthread_mutex_unlock(&mutexColaPacientes);
 
                         enfermero3.atendiendo = 1;
                         enfermero3.pacientesAtendidos++;
@@ -955,9 +957,10 @@ void *hiloEnfermero(void *arg) {
                         writeLogMessage("Enfermero3", mensaje);
                         writeLogMessage("Enfermero3", motivo);
                         pthread_mutex_unlock(&mutexFichero);
+                        enfermero3.atendiendo = 0;
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                            enfermero3.atendiendo = 0;//
+                            enfermero3.atendiendo = 0;//SE PODRIA QUITAR
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
                             sleep(5); //Descansa sus 5 segundos
                             pthread_mutex_lock(&mutexFichero);
@@ -1020,6 +1023,7 @@ void *hiloEnfermero(void *arg) {
                             sprintf(mensaje, "Termina la atencion al paciente nº %d", sigPaciente->id);
                             writeLogMessage("Enfermero3", mensaje);
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero3.atendiendo = 0;
 
                             if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                                 enfermero3.atendiendo = 0;//
