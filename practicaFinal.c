@@ -152,10 +152,12 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
     } 
 //6. Crear 3 hilos enfermer@s.
     int n1 = 0, n2 = 1, n3 = 2;
+
     pthread_create (&threadEnfermero1, NULL, hiloEnfermero, (void *)&n1);
     pthread_create (&threadEnfermero2, NULL, hiloEnfermero, (void *)&n2);
     pthread_create (&threadEnfermero3, NULL, hiloEnfermero, (void *)&n3);
-//7. Crear el hilo médico.
+
+     //7. Crear el hilo médico.
     //pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
     pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
@@ -230,6 +232,12 @@ void nuevoPaciente(int tipo){
         
 
     }
+    struct Paciente *aux;
+    aux = primerPaciente;
+    while(aux != NULL){
+        printf("\nPaciente %d\n", aux->id);
+        aux = aux->sig;
+    }
     pthread_mutex_unlock(&mutexColaPacientes);
 }
 
@@ -286,9 +294,10 @@ void *hiloPaciente (void *arg) {
                     writeLogMessage(type, mensaje);
                     pthread_mutex_unlock(&mutexFichero);
 
-                    pthread_mutex_lock(&mutexColaPacientes);
+
                     eliminarPaciente(&paciente);
-                    free(paciente);
+                    //free(paciente);
+                    pthread_mutex_lock(&mutexColaPacientes);
                     contadorPacientes --;
                     pthread_mutex_unlock(&mutexColaPacientes);
                     pthread_exit(NULL);
@@ -302,9 +311,9 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage(type, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-			            pthread_mutex_lock(&mutexColaPacientes);
                         eliminarPaciente(&paciente);
-                        free(paciente);
+                        //free(paciente);
+                        pthread_mutex_lock(&mutexColaPacientes);
                         contadorPacientes --;                     
                         pthread_mutex_unlock(&mutexColaPacientes);
                         pthread_exit(NULL);
@@ -323,9 +332,9 @@ void *hiloPaciente (void *arg) {
         //compruebo si el paciente tiene gripe.
         if(atendido==6){
         	sprintf(mensaje,"El paciente: %d tiene gripe.", paciente->id);
-        	pthread_mutex_lock(&mutexColaPacientes);
             eliminarPaciente(&paciente);
-            free(paciente);
+            //free(paciente);
+            pthread_mutex_lock(&mutexColaPacientes);
         	contadorPacientes --;                                              
  		    pthread_mutex_unlock(&mutexColaPacientes);
         	pthread_exit(NULL);
@@ -355,7 +364,7 @@ void *hiloPaciente (void *arg) {
         		if(comportamiento<=25){
         			sprintf(mensaje,"El paciente: %d decide participar en la prueba serologica", paciente->id);
 				    pthread_mutex_lock(&mutexColaPacientes);
-        			paciente->serologia==1;
+				    paciente->serologia=1;
 				    pthread_mutex_unlock(&mutexColaPacientes);
 
         			pthread_cond_signal(&varEstadistico);
@@ -388,9 +397,10 @@ void *hiloPaciente (void *arg) {
     writeLogMessage(type, mensaje);
  	pthread_mutex_unlock(&mutexFichero);
 
-	pthread_mutex_lock(&mutexColaPacientes);
+
 	eliminarPaciente(&paciente);
-	free(paciente);
+	//free(paciente);
+    pthread_mutex_lock(&mutexColaPacientes);
    	contadorPacientes --;
 	pthread_mutex_unlock(&mutexColaPacientes);
 
@@ -1076,20 +1086,31 @@ void writeLogMessage(char *id, char *msg) {
 }
 
 void eliminarPaciente(struct Paciente **pacienteAEliminar){
+    pthread_mutex_lock(&mutexColaPacientes);
+    if(*pacienteAEliminar == NULL){
+        printf("NULL\n");
+    }
 	printf("Eliminar Paciente %d\n", (*pacienteAEliminar)->id);
+
 	if((*pacienteAEliminar)->ant != NULL && (*pacienteAEliminar)->sig != NULL){
+	    printf("Opcion 1\n");
 		(*pacienteAEliminar)->ant->sig=(*pacienteAEliminar)->sig;
 		(*pacienteAEliminar)->sig->ant = (*pacienteAEliminar)->ant;
 	}else if((*pacienteAEliminar)->ant != NULL){
-		primerPaciente = (*pacienteAEliminar)->sig;
-		(*pacienteAEliminar)->sig->ant = NULL;
+        printf("Opcion 3\n");
+        ultimoPaciente = (*pacienteAEliminar)->ant;
+        (*pacienteAEliminar)->ant->sig = NULL;
+
 	}else if((*pacienteAEliminar)->sig != NULL){
-		ultimoPaciente = (*pacienteAEliminar)->ant;
-		(*pacienteAEliminar)->ant->sig = NULL;
+        printf("Opcion 2\n");
+        primerPaciente = (*pacienteAEliminar)->sig;
+        (*pacienteAEliminar)->sig->ant = NULL;
 	}else{
-		(*pacienteAEliminar) = NULL;
+	    printf("Opcion por defecto\n");
 		primerPaciente = NULL;
 		ultimoPaciente = NULL;
 	}
+	free((*pacienteAEliminar));
 	printf("Eliminado el paciente \n");
+    pthread_mutex_unlock(&mutexColaPacientes);
 }
