@@ -53,7 +53,7 @@ struct Enfermero
      * Senior(60+ años): 2
      */ 
     int grupoVacunacion; 
-    int atendiendo; //0 si esta libre, 1 si esta atendiendo a un paciente
+    int atendiendo; //0 si esta libre, 1 si esta atendiendo a un paciente, 2 si esta durmiendo
     int pacientesAtendidos;
 };
 struct Enfermero enfermero1,enfermero2,enfermero3;
@@ -681,12 +681,13 @@ void *hiloEnfermero(void *arg) {
 
                         if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
-
+                            enfermero1.atendiendo=2;
                             sleep(5); //Descansa sus 5 segundos 
 
                             pthread_mutex_lock(&mutexFichero);
                             writeLogMessage("Enfermero1", "Enfermer@_1 esta descansando");
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero1.atendiendo=0;    
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
                     }
@@ -700,8 +701,7 @@ void *hiloEnfermero(void *arg) {
                 sigPaciente = primerPaciente;
                 pthread_mutex_unlock(&mutexColaPacientes); 
 
-                if(enfermero2.atendiendo == 0 || enfermero3.atendiendo == 0) { //FIXME: Se accede a otros enfermeros por lo que son compartidos(usar mutex?)
-			//FIXME:No deberia ser cuando enfermero esta atendiendo sino cuando esta durmiendo
+                if(enfermero2.atendiendo == 2 || enfermero3.atendiendo == 2) { //FIXME: Se accede a otros enfermeros por lo que son compartidos(usar mutex?)
                 //No hay pacientes de tipo1, buscamos de otros tipos
                     while(sigPaciente != NULL) {
                         if(enfermero1.atendiendo == 0 && sigPaciente->atendido == 0) {  
@@ -743,10 +743,12 @@ void *hiloEnfermero(void *arg) {
 
                             if(enfermero1.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                                 enfermero1.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                                enfermero1.atendiendo=2;
                                 sleep(5); //Descansa sus 5 segundos 
                                 pthread_mutex_lock(&mutexFichero);
                                 writeLogMessage("Enfermero1", "Enfermer@_1 esta descansando");
                                 pthread_mutex_unlock(&mutexFichero);
+                                enfermero1.atendiendo0;
                             }
 
                         }
@@ -809,10 +811,13 @@ void *hiloEnfermero(void *arg) {
 
                         if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                            enfermero2.atendiendo=2;
                             sleep(5); //Descansa sus 5 segundos 
                             pthread_mutex_lock(&mutexFichero);
                             writeLogMessage("Enfermero2", "Enfermero esta descansando");
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero2.atendiendo=0;
+
                             //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                         }
 
@@ -829,7 +834,7 @@ void *hiloEnfermero(void *arg) {
 		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloqueamos la cola
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                if(enfermero1.atendiendo == 0 || enfermero3.atendiendo == 0) {
+                if(enfermero1.atendiendo == 2 || enfermero3.atendiendo == 2) {
                     while(sigPaciente != NULL) {
 
                         if(enfermero2.atendiendo == 0 && sigPaciente->atendido == 0) {  
@@ -871,10 +876,12 @@ void *hiloEnfermero(void *arg) {
 
                             if(enfermero2.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                                 enfermero2.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                                enfermero2.atendiendo=2;
                                 sleep(5); //Descansa sus 5 segundos 
                                 pthread_mutex_lock(&mutexFichero);
                                 writeLogMessage("Enfermero2", "Enfermer@_2 esta descansando");
                                 pthread_mutex_unlock(&mutexFichero);
+                                enfermero2.atendiendo=0;
                                 //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                             }
 		                    pthread_mutex_lock(&mutexColaPacientes);
@@ -940,10 +947,12 @@ void *hiloEnfermero(void *arg) {
 
                         if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
                             enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                            enfermero3.atendiendo=2;
                             sleep(5); //Descansa sus 5 segundos
                             pthread_mutex_lock(&mutexFichero);
                             writeLogMessage("Enfermero3", "Enfermer@_3 esta descansando");
                             pthread_mutex_unlock(&mutexFichero);
+                            enfermero3.atendiendo=0;
                         }
 
 		                pthread_mutex_lock(&mutexColaPacientes);
@@ -963,7 +972,7 @@ void *hiloEnfermero(void *arg) {
 		        pthread_mutex_unlock(&mutexColaPacientes); //Como ya hemos atendido al paciente desbloquamos la cola
 
                 //No hay pacientes de tipo1, buscamos de otros tipos
-                if(enfermero1.atendiendo == 0 || enfermero2.atendiendo == 0) {
+                if(enfermero1.atendiendo == 2 || enfermero2.atendiendo == 2) {
                     while(i < contadorPacientes && sigPaciente != NULL) {
 		                pthread_mutex_lock(&mutexColaPacientes);
                         if(enfermero3.atendiendo == 0 && sigPaciente->atendido == 0) {  
@@ -1004,12 +1013,13 @@ void *hiloEnfermero(void *arg) {
                             pthread_mutex_unlock(&mutexFichero);
 
                             if(enfermero3.pacientesAtendidos == 5) { //Si es 5 entonces podra descansar
-                                enfermero3.atendiendo = 0;//
                                 enfermero3.pacientesAtendidos = 0; //Resetemaos el contador de pacientes para que pueda volver a empezar
+                                enfermero3.atendiendo=2;
                                 sleep(5); //Descansa sus 5 segundos 
                                 pthread_mutex_lock(&mutexFichero);
                                 writeLogMessage("Enfermero3", "Enfermer@_3 esta descansando");
                                 pthread_mutex_unlock(&mutexFichero);
+                                enfermero3.atendiendo = 0;//
                                 //Aqui creo que habra que indicar a otro enfermero o al medico que debe vacunar
                             }
 
