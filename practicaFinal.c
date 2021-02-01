@@ -294,7 +294,7 @@ void *hiloPaciente (void *arg) {
                     writeLogMessage(type, mensaje);
                     pthread_mutex_unlock(&mutexFichero);
 
-
+                    sleep(1);
                     eliminarPaciente(&paciente);
                     //free(paciente);
                     pthread_mutex_lock(&mutexColaPacientes);
@@ -626,11 +626,11 @@ void *hiloEnfermero(void *arg) {
                     {
                         printf("Enfermero no esta atendiendo\n");
                     }
-                    if (sigPaciente->tipo == 0)
+                    if (sigPaciente!=NULL &&  sigPaciente->tipo == 0)
                     {
                         printf("Sigpaciente tipo =0\n");
                     }
-                    if (sigPaciente->atendido == 0)
+                    if (sigPaciente!=NULL && sigPaciente->atendido == 0)
                     {
                         printf("SsigPaciente->atendido == 0\n");
                     }
