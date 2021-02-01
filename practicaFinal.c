@@ -748,7 +748,7 @@ void *hiloEnfermero(void *arg) {
                                 pthread_mutex_lock(&mutexFichero);
                                 writeLogMessage("Enfermero1", "Enfermer@_1 esta descansando");
                                 pthread_mutex_unlock(&mutexFichero);
-                                enfermero1.atendiendo0;
+                                enfermero1.atendiendo=0;
                             }
 
                         }
