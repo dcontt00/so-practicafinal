@@ -5,7 +5,7 @@ pid2=$(pidof script.sh)
 echo Practica Final
 echo $pid1
 echo Script
-echo $pid2
+echo $BASHPID
 
 while :
 do
