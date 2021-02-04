@@ -11,7 +11,12 @@
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
+
+// Contador de pacientes en la consulta
 int contadorPacientes;
+
+// Contador del total de pacientes que han pasado por la consulta
+int totalPacientes;
 #define MAXPACIENTES 15
 struct Paciente
 {
@@ -37,9 +42,15 @@ struct Paciente
      * Senior(60+ años): 2
      */
     int tipo;
-    int serologia; // 0 si no participa 1 en caso contrario
-    struct Paciente *ant;//Paciente anterior
-    struct Paciente *sig;// Paciente siguiente
+
+    // 0 si no participa 1 en caso contrario
+    int serologia; 
+
+    //Paciente anterior
+    struct Paciente *ant;
+
+    // Paciente siguiente
+    struct Paciente *sig;
 };
 struct Paciente *primerPaciente;
 struct Paciente *ultimoPaciente;
@@ -47,13 +58,20 @@ struct Paciente *ultimoPaciente;
 struct Enfermero
 {
     int id;
+
     /**
      * Junior(0-16 años): 0
      * Medios(16-60 años): 1
      * Senior(60+ años): 2
      */
     int grupoVacunacion;
-    int atendiendo; //0 si esta libre, 1 si esta atendiendo a un paciente, 2 si esta durmiendo
+
+    /**
+     * 0 si esta libre, 
+     * 1 si esta atendiendo a un paciente
+     * 2 si esta durmiendo
+    */
+    int atendiendo; 
     int pacientesAtendidos;
 };
 struct Enfermero enfermero1,enfermero2,enfermero3;
@@ -78,41 +96,42 @@ void *hiloEnfermero(void *arg);
 void *hiloEstadistico(void *arg);
 void eliminarPaciente(struct Paciente **pacienteAEliminar);
 
-int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atendido a todos los pacientes y se halla recibido la señal SIGINT
-//1. signal o sigaction SIGUSR1, paciente junior.
+int main(int argc, char argv[]){
     printf("Se abre el consultorio\n");
     srand (time(NULL));
+
+    // signal SIGUSR1, paciente junior.
 	if(signal(SIGUSR1, &nuevoPaciente) == SIG_ERR){
 		perror("Llamada a signal");
 		exit(-1);
 	}
 
-//2. signal o sigaction SIGUSR2, paciente medio.
+    // signal SIGUSR2, paciente medio.
     if(signal(SIGUSR2, &nuevoPaciente) == SIG_ERR){
 		perror("Llamada a signal");
         	exit(-1);
     }
-//3. signal o sigaction SIGPIPE, paciente senior.
+    // signal SIGPIPE, paciente senior.
 	if(signal(SIGPIPE, &nuevoPaciente) == SIG_ERR){
 		perror("Llamada a signal");
 		exit(-1);
     }
 
-//4. signal o sigaction SIGINT, terminar
+    // signal SIGINT para terminar el programa
     if(signal(SIGINT, SIG_DFL) == SIG_ERR){
         perror("Llamada a signal");
         exit(-1);
-    } // La señal por defecto de SIGINT es suspender la ejecución
-//5. Inicializar recursos (¡Ojo!, Inicializar!=Declarar).
-    //a. Semáforos.
+    } 
+    // inicializar Semáforos.
     if (pthread_mutex_init(&mutexFichero, NULL)!=0){
         exit(-1);
     }
     if (pthread_mutex_init(&mutexColaPacientes, NULL)!=0){
         exit(-1);
     }
-    //b. Contador de pacientes.
+    // Inicializar contador de pacientes.
     contadorPacientes=0;
+    totalPacientes=0;
 
     //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
     //for (size_t i = 0; i < MAXPACIENTES; i++)
@@ -124,45 +143,46 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
     //}
 
 
-    //d. Lista de enfermer@s (si se incluye).
+    // Inicializar enfermero 1
     enfermero1.atendiendo=0;
     enfermero1.grupoVacunacion=0;
     enfermero1.id=1;
     enfermero1.pacientesAtendidos=0;
 
+    // Inicializar enfermero 2
     enfermero2.atendiendo=0;
     enfermero2.grupoVacunacion=1;
     enfermero2.id=2;
     enfermero2.pacientesAtendidos=0;
 
+    // Inicializar enfermero 3
     enfermero3.atendiendo=0;
     enfermero3.grupoVacunacion=2;
     enfermero3.id=3;
     enfermero3.pacientesAtendidos=0;
 
-    //e. Fichero de Log
-
+    // Inicializar fichero de Log
     logFile = fopen (logFileName, "w");
 
-    //f. Variables condición
+    // Inicializar variables condición
     if (pthread_cond_init(&varEstadistico, NULL)!=0){
         exit(-1);
     }
     if (pthread_cond_init(&varPacientes, NULL)!=0){
         exit(-1);
     }
-//6. Crear 3 hilos enfermer@s.
-    int n1 = 0, n2 = 1, n3 = 2;
 
+    // Crear 3 hilos enfermer@s.
+    int n1 = 0, n2 = 1, n3 = 2;
     pthread_create (&threadEnfermero1, NULL, hiloEnfermero, (void *)&n1);
     pthread_create (&threadEnfermero2, NULL, hiloEnfermero, (void *)&n2);
     pthread_create (&threadEnfermero3, NULL, hiloEnfermero, (void *)&n3);
-
-     //7. Crear el hilo médico.
+ 
+    // Crear el hilo médico.
     pthread_create (&medico, NULL, hiloMedico, NULL);
-    //8. Crear el hilo estadístico.
+    // Crear el hilo estadístico.
     pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
-    //9. Esperar por señales de forma infinita.
+    // Esperar por señales de forma infinita.
     while (1){
 	    pause();
     }
@@ -170,51 +190,27 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 
 
 
-
+/**
+ * Metodo que crea un nuevo paciente
+ * 
+ * tipo: Grupo al que pertenece el paciente
+ *  0: Junior
+ *  1: Medio
+ *  2: Senior
+ */
 void nuevoPaciente(int tipo){
-    printf("entre");
+    // Restablecer la señal
     if(signal(tipo, nuevoPaciente) == SIG_ERR){
 	    perror("Llamada a signal");
 	    exit(-1);
     }
-   //1. Comprobar si hay espacio en la lista de pacientes.
+   // Comprobar si hay espacio en la lista de pacientes.
     pthread_mutex_lock(&mutexColaPacientes);
-    if (contadorPacientes<MAXPACIENTES){//a. Si lo hay
-        //i. Se añade el paciente.
+    if (contadorPacientes<MAXPACIENTES){
+        
+        // Añadir paciente a la lista
         struct Paciente *pacienteNuevo;
         pacienteNuevo=malloc(sizeof *pacienteNuevo);
-        //ii. Contador de pacientes se incrementa.
-        contadorPacientes++;
-
-        //iii. nuevaPaciente->id = ContadorPacientes.
-        pacienteNuevo->id=contadorPacientes;
-
-        //iv. nuevoPaciente.atendido=0
-        pacienteNuevo->atendido=0;
-
-	    pacienteNuevo->sig=NULL;
-	    pacienteNuevo->ant=NULL;
-
-        //v. tipo=Depende de la señal recibida.
-        if (tipo == SIGUSR1){
-            pacienteNuevo->tipo=0;
-        }
-
-        if (tipo == SIGUSR2)
-        {
-            pacienteNuevo->tipo=1;
-        }
-
-        if (tipo == SIGPIPE)
-        {
-            pacienteNuevo->tipo=2;
-        }
-
-        //vi. nuevoPaciente.Serología=0.
-        pacienteNuevo->serologia=0;
-
-        //vii. Creamos hilo para el paciente.
-        pthread_t threadNuevoPaciente;
         if (primerPaciente==NULL){
             primerPaciente=pacienteNuevo;
             ultimoPaciente = primerPaciente;
@@ -223,6 +219,35 @@ void nuevoPaciente(int tipo){
             ultimoPaciente->sig = pacienteNuevo;
             ultimoPaciente = pacienteNuevo;
         }
+
+        // Aumentar contador pacientes
+        contadorPacientes++;
+        totalPacientes++;
+
+        // Establecer el id del paciente como el num de pacientes en la consulta
+        pacienteNuevo->id=totalPacientes;
+
+        // Establecer el flag de atendido
+        pacienteNuevo->atendido=0;
+
+        // Establecer el tipo del paciente dependiendo de la señal recibida
+        if (tipo == SIGUSR1){
+            pacienteNuevo->tipo=0;
+        }
+        if (tipo == SIGUSR2)
+        {
+            pacienteNuevo->tipo=1;
+        }
+        if (tipo == SIGPIPE)
+        {
+            pacienteNuevo->tipo=2;
+        }
+
+        // Flag de serologia a 0
+        pacienteNuevo->serologia=0;
+
+        // Crear hilo paciente
+        pthread_t threadNuevoPaciente;
         pthread_create (&threadNuevoPaciente, NULL, hiloPaciente, (void *)pacienteNuevo);
     }
     struct Paciente *aux;
@@ -351,7 +376,7 @@ void *hiloPaciente (void *arg) {
         }
 
         if(atendido == 7){
-            comportamiento = 25;
+            comportamiento = calculaRandom(1, 100);;
             if (comportamiento <= 25) {
                 sprintf(mensaje, "Decide participar en la prueba serologica.");
                 pthread_mutex_lock(&mutexFichero);
@@ -419,6 +444,8 @@ void *hiloMedico(void *arg){
          *1 - si es un paciente con reaccion
          */
 	int reaccion;
+    printf("Soy el médico\n");
+
 	//Se ejecuta indefinidamente hasta que se recibe el la señal
 	while(1){
 		paciente = NULL;
