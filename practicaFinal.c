@@ -11,7 +11,12 @@
 
 pthread_mutex_t mutexFichero, mutexColaPacientes;
 pthread_cond_t varEstadistico,varPacientes;
+
+// Contador de pacientes en la consulta
 int contadorPacientes;
+
+// Contador del total de pacientes que han pasado por la consulta
+int totalPacientes;
 #define MAXPACIENTES 15
 struct Paciente
 {
@@ -126,6 +131,7 @@ int main(int argc, char argv[]){
     }
     // Inicializar contador de pacientes.
     contadorPacientes=0;
+    totalPacientes=0;
 
     //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
     //for (size_t i = 0; i < MAXPACIENTES; i++)
@@ -216,9 +222,10 @@ void nuevoPaciente(int tipo){
 
         // Aumentar contador pacientes
         contadorPacientes++;
+        totalPacientes++;
 
         // Establecer el id del paciente como el num de pacientes en la consulta
-        pacienteNuevo->id=contadorPacientes;
+        pacienteNuevo->id=totalPacientes;
 
         // Establecer el flag de atendido
         pacienteNuevo->atendido=0;
