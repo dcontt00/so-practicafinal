@@ -633,7 +633,7 @@ void *hiloEnfermero(void *arg) {
                     pthread_mutex_lock(&mutexColaPacientes); //Bloqueamos lista para acceder a la cola
                     //Buscamos a un paciente del mismo tipo
                     sigPaciente = primerPaciente;
-                    printf("1\n");
+
                     while (sigPaciente != NULL && paciente == NULL) {
                         if (sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {  //Comprobamos si hay del mismo tipo, si ha sido atendido y si ese enfermero esta atendiendo
                             paciente = sigPaciente;
@@ -642,9 +642,9 @@ void *hiloEnfermero(void *arg) {
                         }
                         sigPaciente = sigPaciente->sig;
                     }
-                    printf("1.f\n");
+
                     //Si no se ha encontrado paciente se buscan pacientes de distintos tipos
-                    printf("2\n");
+
                     if(paciente == NULL){
                         sigPaciente = primerPaciente;
                         //Si alguno de los otros enfermeros esta descansando
@@ -680,19 +680,16 @@ void *hiloEnfermero(void *arg) {
                             }
                         }
                     }
-                    printf("2.f\n");
 
-                    printf("3\n");
+
+
                     if(paciente != NULL){
                         paciente->atendido = 1;
                     }
-                    printf("4\n");
+                   
                     pthread_mutex_unlock(&mutexColaPacientes);
                 }
 
-                if(paciente == NULL){
-                    printf("paciente es NULL\n");
-                }
                 atencion = calcularAtencion();
                 if(atencion == 0) {
                     duerme = calculaRandom(1, 4);
@@ -791,7 +788,7 @@ void *hiloEnfermero(void *arg) {
                                 sigPaciente = sigPaciente->sig;
                             }
                         }else{
-                            if(enfermero1.atendiendo = 1 && enfermero3.atendiendo = 1) {
+                            if(enfermero1.atendiendo == 1 && enfermero3.atendiendo == 1) {
                                 while (sigPaciente != NULL && paciente == NULL) {
                                     if (sigPaciente->atendido == 0) {
                                         paciente = sigPaciente;
@@ -907,7 +904,7 @@ void *hiloEnfermero(void *arg) {
                                 sigPaciente = sigPaciente->sig;
                             }
                         }else{
-                            if(enfermero1.atendiendo = 1 && enfermero2.atendiendo = 1) {
+                            if(enfermero1.atendiendo == 1 && enfermero2.atendiendo == 1) {
                                 while (sigPaciente != NULL && paciente == NULL) {
                                     if (sigPaciente->atendido == 0) {
                                         paciente = sigPaciente;
