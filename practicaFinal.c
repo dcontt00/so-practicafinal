@@ -80,6 +80,7 @@ void eliminarPaciente(struct Paciente **pacienteAEliminar);
 
 int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atendido a todos los pacientes y se halla recibido la señal SIGINT
 //1. signal o sigaction SIGUSR1, paciente junior.
+    printf("Se abre el consultorio\n");
     srand (time(NULL));
 	if(signal(SIGUSR1, &nuevoPaciente) == SIG_ERR){
 		perror("Llamada a signal");
@@ -236,7 +237,6 @@ void nuevoPaciente(int tipo){
 
 
 void *hiloPaciente (void *arg) {
-    printf("aaaaaaa");
     struct Paciente *paciente;
     int atendido;
     int comportamiento;
@@ -351,7 +351,7 @@ void *hiloPaciente (void *arg) {
         }
 
         if(atendido == 7){
-            comportamiento = calculaRandom(1, 100);
+            comportamiento = 25;
             if (comportamiento <= 25) {
                 sprintf(mensaje, "Decide participar en la prueba serologica.");
                 pthread_mutex_lock(&mutexFichero);
@@ -626,6 +626,15 @@ void *hiloEnfermero(void *arg) {
     int atencion, reaccion;
     struct Paciente *sigPaciente;
     struct Paciente *paciente;
+
+    if (grupoVacunacion==0){
+        printf("Soy el enfermero 1 y trato a pacientes Junior\n");
+    }else if(grupoVacunacion==1){
+        printf("Soy el enfermero 2 y trato a pacientes Medio\n");
+    }else{
+        printf("Soy el enfermero 3 y trato a pacientes Senior\n");
+    }
+    
 
 
     while(1) {
@@ -993,6 +1002,7 @@ void *hiloEnfermero(void *arg) {
  * Hilo que representa al Estadístico
  */
 void *hiloEstadistico(void *arg){
+    printf("Soy el estadístico y me encargo de hacer un estudio serológico\n");
 	while(1) {
 		pthread_mutex_lock(&mutexColaPacientes);
 		pthread_cond_wait(&varEstadistico, &mutexColaPacientes);
