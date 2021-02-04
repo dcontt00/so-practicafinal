@@ -153,12 +153,12 @@ int main(int argc, char argv[]){ //TODO terminar programa cuando se hallan atend
 //6. Crear 3 hilos enfermer@s.
     int n1 = 0, n2 = 1, n3 = 2;
 
-    pthread_create (&threadEnfermero1, NULL, hiloEnfermero, (void *)&n1);
+    /*pthread_create (&threadEnfermero1, NULL, hiloEnfermero, (void *)&n1);
     pthread_create (&threadEnfermero2, NULL, hiloEnfermero, (void *)&n2);
     pthread_create (&threadEnfermero3, NULL, hiloEnfermero, (void *)&n3);
-
+*/
      //7. Crear el hilo médico.
-    //pthread_create (&medico, NULL, hiloMedico, NULL);
+    pthread_create (&medico, NULL, hiloMedico, NULL);
 //8. Crear el hilo estadístico.
     //pthread_create (&estadistico, NULL, hiloEstadistico, NULL);
 //9. Esperar por señales de forma infinita.
@@ -266,22 +266,17 @@ void *hiloPaciente (void *arg) {
     writeLogMessage(type, mensaje);
     pthread_mutex_unlock(&mutexFichero);
     pthread_mutex_unlock(&mutexColaPacientes);
-    sleep(3);
     do {
+        sleep(3);
         pthread_mutex_lock(&mutexColaPacientes);
         atendido = paciente->atendido;
-        pthread_mutex_unlock(&mutexColaPacientes);
-        if(atendido == 0) {
-            sleep(3);
-        }
         comportamiento = calculaRandom(1, 10);
         printf("random(1)%d\n", comportamiento);
         if (atendido == 1) {
             printf("El paciente: %d esta siendo atentido", paciente->id);
-        } else if(atendido == 0){
+        }else if(atendido == 0){
             printf("El paciente: %d no esta siendo atentido", paciente->id);
             if (comportamiento <= 3) {
-                pthread_mutex_lock(&mutexColaPacientes);
                 if(paciente->atendido == 0) {
                     if(comportamiento <= 2){
                         sprintf(mensaje, "Se ha cansado de esperar.");
@@ -293,14 +288,12 @@ void *hiloPaciente (void *arg) {
                     pthread_mutex_unlock(&mutexFichero);
                     paciente->atendido = -1;
                 }
-                pthread_mutex_unlock(&mutexColaPacientes);
-            } else{
+            }else{
                 comportamiento = calculaRandom(1, 100);
                 printf("random(2)%d\n", comportamiento);
 
                 // Va al baño y pierde el turno
                 if (comportamiento <= 5) {
-                    pthread_mutex_lock(&mutexColaPacientes);
                     if(paciente->atendido == 0) {
                         sprintf(mensaje, "Se va al baño y pierde su turno.");
                         pthread_mutex_lock(&mutexFichero);
@@ -308,7 +301,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_unlock(&mutexFichero);
                         paciente->atendido = -1; //TODO El paciente pierde el turno, no sale del consultorio
                     }
-                    pthread_mutex_unlock(&mutexColaPacientes);
+
 
                 } else {
                     sprintf(mensaje, "Decide esperar a su turno.");
@@ -319,6 +312,7 @@ void *hiloPaciente (void *arg) {
                 }
             }
         }
+        pthread_mutex_unlock(&mutexColaPacientes);
     }while (atendido == 0);
 
     while(atendido != -1) {
@@ -686,7 +680,7 @@ void *hiloEnfermero(void *arg) {
                     if(paciente != NULL){
                         paciente->atendido = 1;
                     }
-                   
+
                     pthread_mutex_unlock(&mutexColaPacientes);
                 }
 
