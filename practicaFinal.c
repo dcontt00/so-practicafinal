@@ -513,36 +513,47 @@ void *hiloMedico(void *arg){
 					//Si se ha encontrado algun paciente antiguo se le asigna a paciente el paciente mas antiguo
 					if(pacientesAntiguos[1] != -1 || pacientesAntiguos[2] != -1 || pacientesAntiguos[0] != -1){
 						if(nPacientesTipo[0] >= nPacientesTipo[1] && nPacientesTipo[0] >= nPacientesTipo[2]){
-							int i = pacientesAntiguos[0];
-                            sigPaciente = primerPaciente;
-							while(i > 0){
-								sigPaciente = sigPaciente->sig;
-								i--;
-							}
-							paciente = sigPaciente;
-						}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
-							int i = pacientesAntiguos[1];
-                            struct Paciente *sigPaciente;
-                            sigPaciente = primerPaciente;
-                            while(i > 0){
-                                sigPaciente = sigPaciente->sig;
-								i--;
-                            }
-                            paciente = sigPaciente;
-						}else{
-							int i = pacientesAntiguos[2];
-                            struct Paciente *sigPaciente;
-                            sigPaciente = primerPaciente;
-                            while(i > 0){
-                                sigPaciente = sigPaciente->sig;
-                                i--;
-                            }
-                            paciente = sigPaciente;
-						}
+						    //Si el enfermero de este tipo esta atendiendo o descansando
+                            if(enfermero1.atendiendo == 1 || enfermero1.atendiendo == 2) {
+                                int i = pacientesAntiguos[0];
+                                sigPaciente = primerPaciente;
+                                while (i > 0) {
+                                    sigPaciente = sigPaciente->sig;
+                                    i--;
+                                }
 
-						reaccion = 0;
-						//Se le cambia el flag de atendido al paciente si es un paciente para vacunar
-                        paciente->atendido = 1;
+                                paciente = sigPaciente;
+                            }
+						}else if(nPacientesTipo[1] >= nPacientesTipo[0] && nPacientesTipo[1] >= nPacientesTipo[2]){
+                            //Si el enfermero de este tipo esta atendiendo o descansando
+                            if(enfermero2.atendiendo == 1 || enfermero2.atendiendo == 2) {
+                                int i = pacientesAntiguos[1];
+                                sigPaciente = primerPaciente;
+                                while (i > 0) {
+                                    sigPaciente = sigPaciente->sig;
+                                    i--;
+                                }
+
+                                paciente = sigPaciente;
+                            }
+						}else{
+                            //Si el enfermero de este tipo esta atendiendo o descansando
+                            if(enfermero3.atendiendo == 1 || enfermero3.atendiendo == 2) {
+                                int i = pacientesAntiguos[2];
+                                sigPaciente = primerPaciente;
+                                while (i > 0) {
+                                    sigPaciente = sigPaciente->sig;
+                                    i--;
+                                }
+
+                                paciente = sigPaciente;
+                            }
+						}
+						if(paciente != NULL) {
+                            reaccion = 0;
+                            //Se le cambia el flag de atendido al paciente si es un paciente para vacunar
+                            paciente->atendido = 1;
+                        }
 					}
 				}else if(paciente != NULL){
 					//Se le cambia el flag de atendido al paciente si tiene reaccion
