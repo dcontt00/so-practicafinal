@@ -663,7 +663,7 @@ void *hiloEnfermero(void *arg) {
                         sigPaciente = primerPaciente;
                         //Si alguno de los otros enfermeros esta descansando
                         //se buscan los pacientes de ese tipo
-                        if(enfermero2.atendiendo == 2){
+                        if(enfermero2.atendiendo == 2 || enfermero2.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -672,7 +672,7 @@ void *hiloEnfermero(void *arg) {
                                 }
                                 sigPaciente = sigPaciente->sig;
                             }
-                        }else if(enfermero3.atendiendo == 2){
+                        }else if(enfermero3.atendiendo == 2 || enfermero3.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 2 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -680,17 +680,6 @@ void *hiloEnfermero(void *arg) {
                                     enfermero1.pacientesAtendidos++;
                                 }
                                 sigPaciente = sigPaciente->sig;
-                            }
-                        }else{
-                            if(enfermero2.atendiendo == 1 && enfermero3.atendiendo == 1) {
-                                while (sigPaciente != NULL && paciente == NULL) {
-                                    if (sigPaciente->atendido == 0) {
-                                        paciente = sigPaciente;
-                                        enfermero1.atendiendo = 1;
-                                        enfermero1.pacientesAtendidos++;
-                                    }
-                                    sigPaciente = sigPaciente->sig;
-                                }
                             }
                         }
                     }
@@ -783,7 +772,7 @@ void *hiloEnfermero(void *arg) {
                         sigPaciente = primerPaciente;
                         //Si alguno de los otros enfermeros esta descansando
                         //se buscan los pacientes de ese tipo
-                        if(enfermero1.atendiendo == 2){
+                        if(enfermero1.atendiendo == 2 || enfermero1.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -792,7 +781,7 @@ void *hiloEnfermero(void *arg) {
                                 }
                                 sigPaciente = sigPaciente->sig;
                             }
-                        }else if(enfermero3.atendiendo == 2){
+                        }else if(enfermero3.atendiendo == 2 || enfermero3.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 2 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -800,17 +789,6 @@ void *hiloEnfermero(void *arg) {
                                     enfermero2.pacientesAtendidos++;
                                 }
                                 sigPaciente = sigPaciente->sig;
-                            }
-                        }else{
-                            if(enfermero1.atendiendo == 1 && enfermero3.atendiendo == 1) {
-                                while (sigPaciente != NULL && paciente == NULL) {
-                                    if (sigPaciente->atendido == 0) {
-                                        paciente = sigPaciente;
-                                        enfermero2.atendiendo = 1;
-                                        enfermero2.pacientesAtendidos++;
-                                    }
-                                    sigPaciente = sigPaciente->sig;
-                                }
                             }
                         }
                     }
@@ -899,7 +877,7 @@ void *hiloEnfermero(void *arg) {
                         sigPaciente = primerPaciente;
                         //Si alguno de los otros enfermeros esta descansando
                         //se buscan los pacientes de ese tipo
-                        if(enfermero1.atendiendo == 2){
+                        if(enfermero1.atendiendo == 2 || enfermero1.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 0 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -908,7 +886,7 @@ void *hiloEnfermero(void *arg) {
                                 }
                                 sigPaciente = sigPaciente->sig;
                             }
-                        }else if(enfermero2.atendiendo == 2){
+                        }else if(enfermero2.atendiendo == 2 || enfermero2.atendiendo == 1){
                             while (sigPaciente != NULL && paciente == NULL) {
                                 if (sigPaciente->tipo == 1 && sigPaciente->atendido == 0) {
                                     paciente = sigPaciente;
@@ -916,17 +894,6 @@ void *hiloEnfermero(void *arg) {
                                     enfermero3.pacientesAtendidos++;
                                 }
                                 sigPaciente = sigPaciente->sig;
-                            }
-                        }else{
-                            if(enfermero1.atendiendo == 1 && enfermero2.atendiendo == 1) {
-                                while (sigPaciente != NULL && paciente == NULL) {
-                                    if (sigPaciente->atendido == 0) {
-                                        paciente = sigPaciente;
-                                        enfermero3.atendiendo = 1;
-                                        enfermero3.pacientesAtendidos++;
-                                    }
-                                    sigPaciente = sigPaciente->sig;
-                                }
                             }
                         }
                     }
