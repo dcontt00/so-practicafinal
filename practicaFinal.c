@@ -9,7 +9,7 @@
 
 // Compilar con -lpthread
 
-pthread_mutex_t mutexFichero, mutexColaPacientes;
+pthread_mutex_t mutexFichero, mutexColaPacientes, mutexEstadistico;
 pthread_cond_t varEstadistico,varPacientes;
 
 // Contador de pacientes en la consulta
@@ -98,7 +98,7 @@ void eliminarPaciente(struct Paciente **pacienteAEliminar);
 
 int main(int argc, char argv[]){
     printf("Se abre el consultorio\n");
-    srand (time(NULL));
+    srand (time(NULL)*getpid());
 
     // signal SIGUSR1, paciente junior.
 	if(signal(SIGUSR1, &nuevoPaciente) == SIG_ERR){
@@ -127,6 +127,9 @@ int main(int argc, char argv[]){
         exit(-1);
     }
     if (pthread_mutex_init(&mutexColaPacientes, NULL)!=0){
+        exit(-1);
+    }
+    if (pthread_mutex_init(&mutexEstadistico, NULL)!=0){
         exit(-1);
     }
     // Inicializar contador de pacientes.
@@ -326,7 +329,7 @@ void *hiloPaciente (void *arg) {
                         pthread_mutex_lock(&mutexFichero);
                         writeLogMessage(type, mensaje);
                         pthread_mutex_unlock(&mutexFichero);
-                        paciente->atendido = -1; //TODO El paciente pierde el turno, no sale del consultorio
+                        paciente->atendido = -1;
                     }
 
 
@@ -380,7 +383,7 @@ void *hiloPaciente (void *arg) {
         if(atendido == 7){
             comportamiento = calculaRandom(1, 100);;
             if (comportamiento <= 25) {
-                sprintf(mensaje, "Decide participar en la prueba serologica.");
+                sprintf(mensaje, "Decide participar en la prueba serológica.");
                 pthread_mutex_lock(&mutexFichero);
                 writeLogMessage(type, mensaje);
                 pthread_mutex_unlock(&mutexFichero);
@@ -388,15 +391,16 @@ void *hiloPaciente (void *arg) {
                 paciente->serologia = 1;
                 pthread_mutex_unlock(&mutexColaPacientes);
 
-                pthread_cond_signal(&varEstadistico);
+
                 sprintf(mensaje, "Esta preparado para el estudio.");
                 pthread_mutex_lock(&mutexFichero);
                 writeLogMessage(type, mensaje);
                 pthread_mutex_unlock(&mutexFichero);
 
-                pthread_mutex_lock(&mutexColaPacientes);//FIXME: Crear un nuevo mutex para estadistico?
-                pthread_cond_wait(&varPacientes, &mutexColaPacientes);
-                pthread_mutex_unlock(&mutexColaPacientes);
+                pthread_mutex_lock(&mutexEstadistico);
+                pthread_cond_signal(&varEstadistico);
+                pthread_cond_wait(&varPacientes, &mutexEstadistico);
+                pthread_mutex_unlock(&mutexEstadistico);
                 sprintf(mensaje, "Abandona el estudio.");
                 pthread_mutex_lock(&mutexFichero);
                 writeLogMessage(type, mensaje);
@@ -1000,26 +1004,25 @@ void *hiloEnfermero(void *arg) {
 void *hiloEstadistico(void *arg){
     printf("Soy el estadístico y me encargo de hacer un estudio serológico\n");
 	while(1) {
-		pthread_mutex_lock(&mutexColaPacientes);
-		pthread_cond_wait(&varEstadistico, &mutexColaPacientes);
-		pthread_mutex_unlock(&mutexColaPacientes);
+		pthread_mutex_lock(&mutexEstadistico);
+		pthread_cond_wait(&varEstadistico, &mutexEstadistico);
+
 
 		pthread_mutex_lock(&mutexFichero);
 		writeLogMessage("Estadistico", "Comienza la actividad");
 		pthread_mutex_unlock(&mutexFichero);
 
 		sleep(4);
-
 		pthread_mutex_lock(&mutexFichero);
         writeLogMessage("Estadistico", "Termina la actividad");
         pthread_mutex_unlock(&mutexFichero);
 
 		pthread_cond_signal(&varPacientes);
+        pthread_mutex_unlock(&mutexEstadistico);
 	}
 }
 
 int calculaRandom(int n1, int n2){
-    srand (time(NULL)*getpid());
     return (rand() % (n2-n1+1)) + n1;
 }
 
