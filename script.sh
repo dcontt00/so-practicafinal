@@ -1,14 +1,19 @@
 #!/bin/bash
 
-pid=$(pidof practicaFinal)
-echo $pid
+pid1=$(pidof practicaFinal)
+pid2=$(pidof script.sh)
+echo Practica Final
+echo $pid1
+echo Script
+echo $pid2
+
 while :
 do
-	kill -10 $pid
+	kill -10 $pid1
 	sleep 1
-	kill -12 $pid
+	kill -12 $pid1
 	sleep 1
-	kill -13 $pid
+	kill -13 $pid1
 	sleep 1
 done
 

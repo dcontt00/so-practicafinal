@@ -211,6 +211,8 @@ void nuevoPaciente(int tipo){
         // Añadir paciente a la lista
         struct Paciente *pacienteNuevo;
         pacienteNuevo=malloc(sizeof *pacienteNuevo);
+        pacienteNuevo->sig = NULL;
+        pacienteNuevo->ant = NULL;
         if (primerPaciente==NULL){
             primerPaciente=pacienteNuevo;
             ultimoPaciente = primerPaciente;
