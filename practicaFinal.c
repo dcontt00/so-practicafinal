@@ -95,6 +95,7 @@ void *hiloMedico(void *arg);
 void *hiloEnfermero(void *arg);
 void *hiloEstadistico(void *arg);
 void eliminarPaciente(struct Paciente **pacienteAEliminar);
+void cerrarConsulta(int sig);
 
 int main(int argc, char argv[]){
     printf("Se abre el consultorio\n");
@@ -118,7 +119,7 @@ int main(int argc, char argv[]){
     }
 
     // signal SIGINT para terminar el programa
-    if(signal(SIGINT, SIG_DFL) == SIG_ERR){
+    if(signal(SIGINT, &cerrarConsulta) == SIG_ERR){
         perror("Llamada a signal");
         exit(-1);
     } 
@@ -1092,4 +1093,35 @@ void eliminarPaciente(struct Paciente **pacienteAEliminar){
 	free(*pacienteAEliminar);
 	printf("Eliminado el paciente \n");
     pthread_mutex_unlock(&mutexColaPacientes);
+}
+
+/**
+ * Handler que termina el programa
+ */ 
+void cerrarConsulta(int sig){
+    char type[40];
+    char mensaje[100];
+    int i=0;
+
+    // Esperar a que no haya pacientes en la consulta
+    while (contadorPacientes!=0){
+        
+    }
+    
+    printf("Cerrando consulta\n");
+
+    pthread_mutex_lock(&mutexFichero);
+        writeLogMessage("Consulta ", "Cerrando el consultorio");
+    pthread_mutex_unlock(&mutexFichero);
+
+    // Liberar mutex y variables condicion
+    pthread_cond_destroy(&varEstadistico);
+    pthread_cond_destroy(&varPacientes);
+    pthread_mutex_destroy(&mutexColaPacientes);
+    pthread_mutex_destroy(&mutexEstadistico);
+    pthread_mutex_destroy(&mutexFichero);
+
+
+    //pthread_exit(NULL);
+    exit(0);
 }
