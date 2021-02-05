@@ -381,7 +381,7 @@ void *hiloPaciente (void *arg) {
         }
 
         if(atendido == 7){
-            comportamiento = calculaRandom(1, 100);;
+            comportamiento = calculaRandom(1, 100);
             if (comportamiento <= 25) {
                 sprintf(mensaje, "Decide participar en la prueba serológica.");
                 pthread_mutex_lock(&mutexFichero);
@@ -397,9 +397,15 @@ void *hiloPaciente (void *arg) {
                 writeLogMessage(type, mensaje);
                 pthread_mutex_unlock(&mutexFichero);
 
+
                 pthread_mutex_lock(&mutexEstadistico);
                 pthread_cond_signal(&varEstadistico);
+                sprintf(mensaje, "Entra al estudio.");
+                pthread_mutex_lock(&mutexFichero);
+                writeLogMessage(type, mensaje);
+                pthread_mutex_unlock(&mutexFichero);
                 pthread_cond_wait(&varPacientes, &mutexEstadistico);
+                pthread_cond_signal(&varPacientes);
                 pthread_mutex_unlock(&mutexEstadistico);
                 sprintf(mensaje, "Abandona el estudio.");
                 pthread_mutex_lock(&mutexFichero);
@@ -410,7 +416,7 @@ void *hiloPaciente (void *arg) {
                 paciente->atendido = -1;
                 pthread_mutex_unlock(&mutexColaPacientes);
             } else {
-                sprintf(mensaje, "No va a participar en la prueba serologica.");
+                sprintf(mensaje, "No va a participar en la prueba serológica.");
                 pthread_mutex_lock(&mutexFichero);
                 writeLogMessage(type, mensaje);
                 pthread_mutex_unlock(&mutexFichero);
