@@ -81,7 +81,13 @@ pthread_t threadEnfermero1, threadEnfermero2, threadEnfermero3;
 
 char logFileName[]="registroTiempos.log";
 FILE *logFile;
-int i=0;
+
+/*
+ * Variable para la finalizacion de los hilos
+ * 0 - no finalizar
+ * 1 - finalizar
+ */
+int finalizar;
 
 /*
  *Declaracion de funciones a utilizar
@@ -136,6 +142,7 @@ int main(int argc, char argv[]){
     // Inicializar contador de pacientes.
     contadorPacientes=0;
     totalPacientes=0;
+    finalizar = 0;
 
     //c. Lista de pacientes id 0, atendido 0, tipo 0, serología 0.
     //for (size_t i = 0; i < MAXPACIENTES; i++)
@@ -453,6 +460,7 @@ void *hiloMedico(void *arg){
     struct Paciente *sigPaciente;
 	int contador;
 	int pacientesNoAtendidos;
+	int fin;
 	/*0 - si no es un paciente con reaccion
          *1 - si es un paciente con reaccion
          */
@@ -585,6 +593,19 @@ void *hiloMedico(void *arg){
 				//Se espera 1 segundo para repetir el bucle si posPaciente es -1
 
 			}
+
+            /*
+             * Comprobamos si se tiene que terminar el hilo
+             */
+            pthread_mutex_lock(&mutexColaPacientes);
+            fin = finalizar;
+            pthread_mutex_unlock(&mutexColaPacientes);
+            if(fin == 1){
+                pthread_mutex_lock(&mutexFichero);
+                writeLogMessage("Medico", "Hilo Terminado");
+                pthread_mutex_unlock(&mutexFichero);
+                pthread_exit(NULL);
+            }
 		}
 
 		//Medico sale del bucle de buscar pacientes
@@ -663,7 +684,7 @@ void *hiloEnfermero(void *arg) {
     char mensaje[100];
     int duerme;
     int grupoVacunacion =* (int*) arg;
-    int atencion, reaccion;
+    int atencion, reaccion, fin;
     struct Paciente *sigPaciente;
     struct Paciente *paciente;
 
@@ -729,8 +750,18 @@ void *hiloEnfermero(void *arg) {
                     if(paciente != NULL){
                         paciente->atendido = 1;
                     }
-
+                    fin = finalizar;
                     pthread_mutex_unlock(&mutexColaPacientes);
+
+                    /*
+                     * Comprobamos si se tiene que terminar el hilo
+                     */
+                    if(fin == 1){
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermer@_1", "Hilo Terminado");
+                        pthread_mutex_unlock(&mutexFichero);
+                        pthread_exit(NULL);
+                    }
                 }
 
                 atencion = calcularAtencion();
@@ -836,7 +867,17 @@ void *hiloEnfermero(void *arg) {
                     if(paciente != NULL){
                         paciente->atendido = 1;
                     }
+                    fin = finalizar;
                     pthread_mutex_unlock(&mutexColaPacientes);
+                    /*
+                     * Comprobamos si se tiene que terminar el hilo
+                     */
+                    if(fin == 1){
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermer@_2", "Hilo Terminado");
+                        pthread_mutex_unlock(&mutexFichero);
+                        pthread_exit(NULL);
+                    }
                 }
 
                 atencion = calcularAtencion();
@@ -941,7 +982,18 @@ void *hiloEnfermero(void *arg) {
                     if(paciente != NULL){
                         paciente->atendido = 1;
                     }
+                    fin = finalizar;
                     pthread_mutex_unlock(&mutexColaPacientes);
+
+                    /*
+                     *  Combrobamos si el hilo tiene que terminar
+                     */
+                    if(fin == 1){
+                        pthread_mutex_lock(&mutexFichero);
+                        writeLogMessage("Enfermer@_3", "Hilo Terminado.");
+                        pthread_mutex_unlock(&mutexFichero);
+                        pthread_exit(NULL);
+                    }
                 }
 
                 atencion = calcularAtencion();
@@ -1010,22 +1062,36 @@ void *hiloEnfermero(void *arg) {
  */
 void *hiloEstadistico(void *arg){
     printf("Soy el estadístico y me encargo de hacer un estudio serológico\n");
+    int fin;
 	while(1) {
 		pthread_mutex_lock(&mutexEstadistico);
 		pthread_cond_wait(&varEstadistico, &mutexEstadistico);
+        /*
+         * Comprobamos si se tiene que terminar el hilo
+         */
+        pthread_mutex_lock(&mutexColaPacientes);
+        fin = finalizar;
+        pthread_mutex_unlock(&mutexColaPacientes);
 
+        if(fin == 1){
+            pthread_mutex_lock(&mutexFichero);
+            writeLogMessage("Estadístico", "Hilo Terminado");
+            pthread_mutex_unlock(&mutexFichero);
+            pthread_exit(NULL);
+        }else {
+            pthread_mutex_lock(&mutexFichero);
+            writeLogMessage("Estadistico", "Comienza la actividad");
+            pthread_mutex_unlock(&mutexFichero);
 
-		pthread_mutex_lock(&mutexFichero);
-		writeLogMessage("Estadistico", "Comienza la actividad");
-		pthread_mutex_unlock(&mutexFichero);
+            sleep(4);
 
-		sleep(4);
-		pthread_mutex_lock(&mutexFichero);
-        writeLogMessage("Estadistico", "Termina la actividad");
-        pthread_mutex_unlock(&mutexFichero);
+            pthread_mutex_lock(&mutexFichero);
+            writeLogMessage("Estadistico", "Termina la actividad");
+            pthread_mutex_unlock(&mutexFichero);
 
-		pthread_cond_signal(&varPacientes);
-        pthread_mutex_unlock(&mutexEstadistico);
+            pthread_cond_signal(&varPacientes);
+            pthread_mutex_unlock(&mutexEstadistico);
+        }
 	}
 }
 
@@ -1102,17 +1168,35 @@ void cerrarConsulta(int sig){
     char type[40];
     char mensaje[100];
     int i=0;
-
+    signal(SIGUSR1, SIG_IGN);
+    signal(SIGUSR2, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
     // Esperar a que no haya pacientes en la consulta
-    while (contadorPacientes!=0){
-        
-    }
+
+    do{
+        pthread_mutex_lock(&mutexColaPacientes);
+        i = contadorPacientes;
+        pthread_mutex_unlock(&mutexColaPacientes);
+    }while (i!=0);
     
     printf("Cerrando consulta\n");
 
     pthread_mutex_lock(&mutexFichero);
-        writeLogMessage("Consulta ", "Cerrando el consultorio");
+    writeLogMessage("Consulta ", "Cerrando el consultorio");
     pthread_mutex_unlock(&mutexFichero);
+
+    //Colocamos la variable para finalizar a 1
+    pthread_mutex_lock(&mutexColaPacientes);
+    finalizar = 1;
+    pthread_mutex_unlock(&mutexColaPacientes);
+
+    //Esperamos a que los hilos terminen
+    pthread_join(medico, NULL);
+    pthread_join(threadEnfermero1, NULL);
+    pthread_join(threadEnfermero2, NULL);
+    pthread_join(threadEnfermero3, NULL);
+    pthread_cond_signal(&varEstadistico);
+    pthread_join(estadistico, NULL);
 
     // Liberar mutex y variables condicion
     pthread_cond_destroy(&varEstadistico);
@@ -1121,6 +1205,10 @@ void cerrarConsulta(int sig){
     pthread_mutex_destroy(&mutexEstadistico);
     pthread_mutex_destroy(&mutexFichero);
 
+
+    pthread_mutex_lock(&mutexFichero);
+    writeLogMessage("Consulta ", "Consultorio cerrado");
+    pthread_mutex_unlock(&mutexFichero);
 
     //pthread_exit(NULL);
     exit(0);
