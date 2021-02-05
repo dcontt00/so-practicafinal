@@ -1090,8 +1090,9 @@ void *hiloEstadistico(void *arg){
             pthread_mutex_unlock(&mutexFichero);
 
             pthread_cond_signal(&varPacientes);
-            pthread_mutex_unlock(&mutexEstadistico);
+
         }
+        pthread_mutex_unlock(&mutexEstadistico);
 	}
 }
 
@@ -1175,7 +1176,7 @@ void cerrarConsulta(int sig){
 
     do{
         pthread_mutex_lock(&mutexColaPacientes);
-        i = contadorPacientes;
+            i = contadorPacientes;
         pthread_mutex_unlock(&mutexColaPacientes);
     }while (i!=0);
     
@@ -1195,7 +1196,11 @@ void cerrarConsulta(int sig){
     pthread_join(threadEnfermero1, NULL);
     pthread_join(threadEnfermero2, NULL);
     pthread_join(threadEnfermero3, NULL);
+
+    pthread_mutex_lock(&mutexEstadistico);
     pthread_cond_signal(&varEstadistico);
+    pthread_mutex_unlock(&mutexEstadistico);
+    
     pthread_join(estadistico, NULL);
 
     // Liberar mutex y variables condicion
