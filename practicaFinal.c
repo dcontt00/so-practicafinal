@@ -1095,14 +1095,20 @@ void eliminarPaciente(struct Paciente **pacienteAEliminar){
 void cerrarConsulta(int sig){
     char type[40];
     char mensaje[100];
-    printf("Cerrando consulta\n");  
-    sprintf(type, "%s","Consulta ");
-    sprintf(mensaje, "Cerrando el consultorio\n");
+    int i=0;
+
+    // Esperar a que no haya pacientes en la consulta
+    while (contadorPacientes!=0){
+        
+    }
+    
+    printf("Cerrando consulta\n");
 
     pthread_mutex_lock(&mutexFichero);
-        writeLogMessage(type, mensaje);
+        writeLogMessage("Consulta ", "Cerrando el consultorio");
     pthread_mutex_unlock(&mutexFichero);
 
+    // Liberar mutex y variables condicion
     pthread_cond_destroy(&varEstadistico);
     pthread_cond_destroy(&varPacientes);
     pthread_mutex_destroy(&mutexColaPacientes);
@@ -1110,7 +1116,6 @@ void cerrarConsulta(int sig){
     pthread_mutex_destroy(&mutexFichero);
 
 
-
-    pthread_exit(0);
+    //pthread_exit(NULL);
     exit(0);
 }
